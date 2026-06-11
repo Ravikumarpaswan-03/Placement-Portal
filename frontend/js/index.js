@@ -3,21 +3,57 @@ const AUTH_URL = `${BASE_URL}/api/auth`;
 const STATS_URL = `${BASE_URL}/api/dashboard/stats`;
 
 // Tab switcher logic
+let verificationEmail = "";
+
 function switchTab(tab) {
   const loginSection = document.getElementById("loginSection");
   const registerSection = document.getElementById("registerSection");
+  const otpSection = document.getElementById("otpSection");
   const tabBtns = document.querySelectorAll(".tab-btn");
+  const tabsContainer = document.querySelector(".tabs");
+
+  if (tabsContainer) {
+    tabsContainer.style.display = "flex";
+  }
+  if (otpSection) {
+    otpSection.classList.remove("active");
+  }
 
   if (tab === "login") {
-    loginSection.classList.add("active");
-    registerSection.classList.remove("active");
+    if (loginSection) loginSection.classList.add("active");
+    if (registerSection) registerSection.classList.remove("active");
     tabBtns[0].classList.add("active");
     tabBtns[1].classList.remove("active");
   } else {
-    loginSection.classList.remove("active");
-    registerSection.classList.add("active");
+    if (loginSection) loginSection.classList.remove("active");
+    if (registerSection) registerSection.classList.add("active");
     tabBtns[0].classList.remove("active");
     tabBtns[1].classList.add("active");
+  }
+}
+
+function showVerification(email) {
+  verificationEmail = email;
+  const targetEmailEl = document.getElementById("otpTargetEmail");
+  if (targetEmailEl) {
+    targetEmailEl.innerText = email;
+  }
+
+  const loginSection = document.getElementById("loginSection");
+  const registerSection = document.getElementById("registerSection");
+  const otpSection = document.getElementById("otpSection");
+  const tabsContainer = document.querySelector(".tabs");
+
+  if (tabsContainer) {
+    tabsContainer.style.display = "none";
+  }
+  if (loginSection) loginSection.classList.remove("active");
+  if (registerSection) registerSection.classList.remove("active");
+  if (otpSection) otpSection.classList.add("active");
+  
+  const codeEl = document.getElementById("otpCode");
+  if (codeEl) {
+    codeEl.value = "";
   }
 }
 
@@ -73,7 +109,12 @@ async function loginUser(event) {
         window.location.href = "pages/student-dashboard.html";
       }
     } else {
-      alert(data.message || "Login failed.");
+      if (data.needsVerification && data.email) {
+        alert(data.message || "Verification required.");
+        showVerification(data.email);
+      } else {
+        alert(data.message || "Login failed.");
+      }
     }
   } catch (error) {
     console.error("Login error:", error);
@@ -101,10 +142,8 @@ async function registerUser(event) {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Registration successful. Please log in.");
-      switchTab("login");
-      // Pre-fill the login email
-      document.getElementById("email").value = email;
+      alert("Registration successful. Please verify your email with the OTP sent to " + email);
+      showVerification(email);
       event.target.reset();
     } else {
       alert(data.message || "Registration failed.");
@@ -113,6 +152,92 @@ async function registerUser(event) {
     console.error("Registration error:", error);
     alert("Registration Failed: " + error.message);
   }
+}
+
+// Handle OTP Verification Submit
+async function verifyOtp(event) {
+  event.preventDefault();
+  const otp = document.getElementById("otpCode").value;
+
+  try {
+    const response = await fetch(`${AUTH_URL}/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: verificationEmail, otp })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userRole", data.role || "student");
+      localStorage.setItem("userName", data.name || "User");
+      localStorage.setItem("userEmail", data.email || "");
+
+      alert("Email verified and Login Successful");
+
+      const role = data.role || "student";
+      if (role === "admin") {
+        window.location.href = "pages/admin-dashboard.html";
+      } else if (role === "company") {
+        window.location.href = "pages/company-dashboard.html";
+      } else if (role === "mentor") {
+        window.location.href = "pages/mentor-dashboard.html";
+      } else {
+        window.location.href = "pages/student-dashboard.html";
+      }
+    } else {
+      alert(data.message || "Verification failed.");
+    }
+  } catch (error) {
+    console.error("Verification error:", error);
+    alert("Verification Failed: " + error.message);
+  }
+}
+
+// Handle OTP Resend Link
+async function resendOtp(event) {
+  if (event) event.preventDefault();
+  try {
+    const response = await fetch(`${AUTH_URL}/resend-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: verificationEmail })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Verification code resent successfully.");
+      const codeEl = document.getElementById("otpCode");
+      if (codeEl) {
+        codeEl.value = "";
+      }
+    } else {
+      alert(data.message || "Failed to resend OTP.");
+    }
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    alert("Resend OTP Failed: " + error.message);
+  }
+}
+
+// Cancel OTP Verification
+function cancelOtp(event) {
+  if (event) event.preventDefault();
+  const tabsContainer = document.querySelector(".tabs");
+  if (tabsContainer) {
+    tabsContainer.style.display = "flex";
+  }
+  const otpSection = document.getElementById("otpSection");
+  if (otpSection) {
+    otpSection.classList.remove("active");
+  }
+  switchTab("login");
 }
 
 // Attach event handlers
@@ -127,5 +252,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const registerForm = document.getElementById("registerForm");
   if (registerForm) {
     registerForm.addEventListener("submit", registerUser);
+  }
+
+  const otpForm = document.getElementById("otpForm");
+  if (otpForm) {
+    otpForm.addEventListener("submit", verifyOtp);
   }
 });

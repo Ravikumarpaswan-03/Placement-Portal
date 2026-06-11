@@ -122,6 +122,22 @@
           <button type="submit">Register</button>
         </form>
       </div>
+
+      <!-- OTP Verification Form -->
+      <div id="otpSection" class="form-container">
+        <h3>Verify Email Address</h3>
+        <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af; line-height: 1.4;">
+          A One-Time Password (OTP) has been sent to <span id="otpTargetEmail" style="color: #818cf8; font-weight: bold;"></span>. Please enter it below to verify your account.
+        </p>
+        <form id="otpForm">
+          <input id="otpCode" type="text" placeholder="6-Digit OTP" pattern="\d{6}" maxlength="6" required style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: bold;">
+          <button type="submit">Verify Code</button>
+        </form>
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.9rem;">
+          <a href="#" onclick="resendOtp(event)" style="color: #818cf8; text-decoration: none; font-weight: 500;">Resend OTP</a>
+          <a href="#" onclick="cancelOtp(event)" style="color: #9ca3af; text-decoration: none;">Back to Login</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -18,9 +18,14 @@ const connectDB = async () => {
         name: "Primary Admin",
         email: adminEmail,
         passwordHash: hashedPassword,
-        role: "admin"
+        role: "admin",
+        isVerified: true
       });
       console.log(`Primary Administrator '${adminEmail}' seeded successfully.`);
+    } else if (adminExists.isVerified !== true) {
+      adminExists.isVerified = true;
+      await adminExists.save();
+      console.log(`Updated Primary Administrator '${adminEmail}' to verified status.`);
     }
 
   } catch (error) {
