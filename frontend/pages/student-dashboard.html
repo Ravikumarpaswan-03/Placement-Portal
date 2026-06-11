@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Student Dashboard</title>
+
+<link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Student Dashboard</h1>
+
+<div class="nav">
+  <button onclick="navigateTo('student.html')">Edit Profile</button>
+  <button onclick="navigateTo('jobs.html')">View Jobs</button>
+  <button onclick="navigateTo('applications.html')">My Applications</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="card">
+  <h3>Profile</h3>
+  <p id="userName">Welcome, Student!</p>
+  <p id="userEmail"></p>
+</div>
+
+<div class="card">
+  <h2>My Application Stats</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Applied Jobs</h3>
+      <p id="appliedCount">0</p>
+    </div>
+    <div class="stat-card">
+      <h3>Shortlisted</h3>
+      <p id="shortlistedCount">0</p>
+    </div>
+    <div class="stat-card">
+      <h3>Selected</h3>
+      <p id="selectedCount">0</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/student-dashboard.js"></script>
+
+</body>
+
+</html>

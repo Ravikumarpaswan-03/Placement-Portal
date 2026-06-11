@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Applications</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="nav" style="justify-content: space-between; align-items: center; width: 100%;">
+    <h2 style="border: none; margin: 0; padding: 0;">Applications</h2>
+    <button onclick="goBack()" style="padding: 8px 16px; font-size: 0.9rem;">Back to Dashboard</button>
+  </div>
+
+  <div id="createApplicationSection" class="card" style="display: none;">
+    <h3>Create Application Manually</h3>
+    <form id="applicationForm">
+        <input id="applicationStudent" placeholder="Student Name" required>
+        <input id="applicationJob" placeholder="Job Title" required>
+        <select id="applicationStatus">
+            <option value="Applied">Applied</option>
+            <option value="Shortlisted">Shortlisted</option>
+            <option value="Selected">Selected</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+        <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Applications</h3>
+    <div id="applicationList">Loading applications...</div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/application.js"></script>
+</body>
+</html>

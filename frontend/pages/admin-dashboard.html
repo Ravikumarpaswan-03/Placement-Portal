@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Admin Dashboard</title>
+
+<link rel="stylesheet" href="../css/style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Admin Dashboard</h1>
+
+<div class="nav">
+  <button onclick="navigateTo('companies.html')">Manage Companies</button>
+  <button onclick="navigateTo('student.html')">Manage Students</button>
+  <button onclick="navigateTo('jobs.html')">Manage Jobs</button>
+  <button onclick="navigateTo('applications.html')">View Applications</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="card">
+  <h2>Quick Overview</h2>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>Total Students</h3>
+      <p id="students">Loading...</p>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Total Companies</h3>
+      <p id="companies">Loading...</p>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Total Jobs</h3>
+      <p id="jobs">Loading...</p>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Total Applications</h3>
+      <p id="applications">Loading...</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Shortlisted</h3>
+      <p id="shortlisted">Loading...</p>
+    </div>
+    
+    <div class="stat-card">
+      <h3>Placed Students</h3>
+      <p id="placed">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Administrator Form -->
+<div class="card">
+  <h3>Add New Administrator</h3>
+  <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Create another administrator account with email and password.</p>
+  <form id="addAdminForm">
+    <input id="adminName" placeholder="Admin Full Name" required>
+    <input id="adminEmail" type="email" placeholder="Admin Email" required>
+    <input id="adminPassword" type="password" placeholder="Password" required>
+    <button type="submit" style="background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);">Create Admin Account</button>
+  </form>
+</div>
+
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/admin-dashboard.js"></script>
+
+</body>
+
+</html>

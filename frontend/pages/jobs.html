@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Jobs</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .search-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  .search-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="nav" style="justify-content: space-between; align-items: center; width: 100%;">
+    <h2 style="border: none; margin: 0; padding: 0;">Jobs</h2>
+    <div style="display: flex; gap: 10px;">
+      <button id="postJobBtn" style="display: none; padding: 8px 16px; font-size: 0.9rem;" onclick="location.href='create-job.html'">Post a Job</button>
+      <button onclick="goBack()" style="padding: 8px 16px; font-size: 0.9rem;">Back to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Search & Filter Card -->
+  <div class="card">
+    <h3>Search & Filter Jobs</h3>
+    <form id="searchForm" onsubmit="event.preventDefault(); getJobs();">
+      <div class="search-grid">
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Job Title / Role</label>
+          <input id="searchTitle" placeholder="e.g. Software Developer">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Company Name</label>
+          <input id="searchCompany" placeholder="e.g. TCS">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Location</label>
+          <input id="searchLocation" placeholder="e.g. Pune">
+        </div>
+      </div>
+      <div class="search-actions">
+        <button type="button" onclick="clearFilters()" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); box-shadow: none;">Clear</button>
+        <button type="submit">Search</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Jobs List -->
+  <div class="card">
+    <h3>Available Jobs</h3>
+    <div id="jobList">Loading jobs...</div>
+  </div>
+
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/job.js"></script>
+
+</body>
+
+</html>
