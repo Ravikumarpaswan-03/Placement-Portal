@@ -222,3 +222,64 @@ exports.resendOtp = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No user associated with this email address" });
+    }
+
+    const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = resetOtp;
+    user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await user.save();
+
+    const { sendOtpEmail } = require("../utils/mailer");
+    await sendOtpEmail(user.email, resetOtp, "reset");
+
+    res.status(200).json({ message: "Password reset code sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Email, OTP code, and new password are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid verification code" });
+    }
+
+    if (user.otpExpires < new Date()) {
+      return res.status(400).json({ message: "Verification code has expired. Please request a new one." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = hashedPassword;
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully. You can now log in." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

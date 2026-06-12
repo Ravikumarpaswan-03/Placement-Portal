@@ -4,11 +4,14 @@ const STATS_URL = `${BASE_URL}/api/dashboard/stats`;
 
 // Tab switcher logic
 let verificationEmail = "";
+let resetPasswordEmail = "";
 
 function switchTab(tab) {
   const loginSection = document.getElementById("loginSection");
   const registerSection = document.getElementById("registerSection");
   const otpSection = document.getElementById("otpSection");
+  const forgotPasswordSection = document.getElementById("forgotPasswordSection");
+  const resetPasswordSection = document.getElementById("resetPasswordSection");
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabsContainer = document.querySelector(".tabs");
 
@@ -17,6 +20,12 @@ function switchTab(tab) {
   }
   if (otpSection) {
     otpSection.classList.remove("active");
+  }
+  if (forgotPasswordSection) {
+    forgotPasswordSection.classList.remove("active");
+  }
+  if (resetPasswordSection) {
+    resetPasswordSection.classList.remove("active");
   }
 
   if (tab === "login") {
@@ -42,6 +51,8 @@ function showVerification(email) {
   const loginSection = document.getElementById("loginSection");
   const registerSection = document.getElementById("registerSection");
   const otpSection = document.getElementById("otpSection");
+  const forgotPasswordSection = document.getElementById("forgotPasswordSection");
+  const resetPasswordSection = document.getElementById("resetPasswordSection");
   const tabsContainer = document.querySelector(".tabs");
 
   if (tabsContainer) {
@@ -49,12 +60,80 @@ function showVerification(email) {
   }
   if (loginSection) loginSection.classList.remove("active");
   if (registerSection) registerSection.classList.remove("active");
+  if (forgotPasswordSection) forgotPasswordSection.classList.remove("active");
+  if (resetPasswordSection) resetPasswordSection.classList.remove("active");
   if (otpSection) otpSection.classList.add("active");
   
   const codeEl = document.getElementById("otpCode");
   if (codeEl) {
     codeEl.value = "";
   }
+}
+
+function showForgotPassword(event) {
+  if (event) event.preventDefault();
+  const loginSection = document.getElementById("loginSection");
+  const registerSection = document.getElementById("registerSection");
+  const otpSection = document.getElementById("otpSection");
+  const forgotPasswordSection = document.getElementById("forgotPasswordSection");
+  const resetPasswordSection = document.getElementById("resetPasswordSection");
+  const tabsContainer = document.querySelector(".tabs");
+
+  if (tabsContainer) {
+    tabsContainer.style.display = "none";
+  }
+  if (loginSection) loginSection.classList.remove("active");
+  if (registerSection) registerSection.classList.remove("active");
+  if (otpSection) otpSection.classList.remove("active");
+  if (resetPasswordSection) resetPasswordSection.classList.remove("active");
+  if (forgotPasswordSection) forgotPasswordSection.classList.add("active");
+  
+  const forgotEmailEl = document.getElementById("forgotEmail");
+  if (forgotEmailEl) forgotEmailEl.value = "";
+}
+
+function showResetPassword(email) {
+  resetPasswordEmail = email;
+  const targetEmailEl = document.getElementById("resetTargetEmail");
+  if (targetEmailEl) {
+    targetEmailEl.innerText = email;
+  }
+
+  const loginSection = document.getElementById("loginSection");
+  const registerSection = document.getElementById("registerSection");
+  const otpSection = document.getElementById("otpSection");
+  const forgotPasswordSection = document.getElementById("forgotPasswordSection");
+  const resetPasswordSection = document.getElementById("resetPasswordSection");
+  const tabsContainer = document.querySelector(".tabs");
+
+  if (tabsContainer) {
+    tabsContainer.style.display = "none";
+  }
+  if (loginSection) loginSection.classList.remove("active");
+  if (registerSection) registerSection.classList.remove("active");
+  if (otpSection) otpSection.classList.remove("active");
+  if (forgotPasswordSection) forgotPasswordSection.classList.remove("active");
+  if (resetPasswordSection) resetPasswordSection.classList.add("active");
+
+  const resetCodeEl = document.getElementById("resetCode");
+  const resetNewPasswordEl = document.getElementById("resetNewPassword");
+  if (resetCodeEl) resetCodeEl.value = "";
+  if (resetNewPasswordEl) resetNewPasswordEl.value = "";
+}
+
+function cancelForgotPassword(event) {
+  if (event) event.preventDefault();
+  const tabsContainer = document.querySelector(".tabs");
+  if (tabsContainer) {
+    tabsContainer.style.display = "flex";
+  }
+  
+  const forgotPasswordSection = document.getElementById("forgotPasswordSection");
+  const resetPasswordSection = document.getElementById("resetPasswordSection");
+  if (forgotPasswordSection) forgotPasswordSection.classList.remove("active");
+  if (resetPasswordSection) resetPasswordSection.classList.remove("active");
+  
+  switchTab("login");
 }
 
 // Fetch dashboard stats on load
@@ -110,7 +189,7 @@ async function loginUser(event) {
       }
     } else {
       if (data.needsVerification && data.email) {
-        alert(data.message || "Verification required.");
+        alert("Your email address is not verified yet. We have opened the verification screen. Please enter the OTP code sent to your inbox to activate your account.");
         showVerification(data.email);
       } else {
         alert(data.message || "Login failed.");
@@ -240,6 +319,63 @@ function cancelOtp(event) {
   switchTab("login");
 }
 
+// Handle Forgot Password Submit
+async function forgotPasswordSubmit(event) {
+  event.preventDefault();
+  const email = document.getElementById("forgotEmail").value;
+
+  try {
+    const response = await fetch(`${AUTH_URL}/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("A password reset OTP code has been sent to " + email);
+      showResetPassword(email);
+    } else {
+      alert(data.message || "Failed to process forgot password request.");
+    }
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    alert("Error: " + error.message);
+  }
+}
+
+// Handle Reset Password Submit
+async function resetPasswordSubmit(event) {
+  event.preventDefault();
+  const otp = document.getElementById("resetCode").value;
+  const newPassword = document.getElementById("resetNewPassword").value;
+
+  try {
+    const response = await fetch(`${AUTH_URL}/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: resetPasswordEmail, otp, newPassword })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Password reset successfully! You can now log in with your new password.");
+      cancelForgotPassword();
+    } else {
+      alert(data.message || "Failed to reset password.");
+    }
+  } catch (error) {
+    console.error("Reset password error:", error);
+    alert("Error: " + error.message);
+  }
+}
+
 // Attach event handlers
 document.addEventListener("DOMContentLoaded", () => {
   loadStats();
@@ -257,5 +393,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const otpForm = document.getElementById("otpForm");
   if (otpForm) {
     otpForm.addEventListener("submit", verifyOtp);
+  }
+
+  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener("submit", forgotPasswordSubmit);
+  }
+
+  const resetPasswordForm = document.getElementById("resetPasswordForm");
+  if (resetPasswordForm) {
+    resetPasswordForm.addEventListener("submit", resetPasswordSubmit);
   }
 });
