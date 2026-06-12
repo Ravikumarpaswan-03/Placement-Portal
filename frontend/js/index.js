@@ -233,8 +233,8 @@ async function registerUser(event) {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Registration successful. Please verify your email with the OTP sent to " + email);
-      showVerification(email);
+      alert("Registration successful! You can now log in.");
+      switchTab("login");
       event.target.reset();
     } else {
       alert(data.message || "Registration failed.");

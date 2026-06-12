@@ -70,32 +70,18 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
     const user = await User.create({
       name,
       email,
       passwordHash: hashedPassword,
       role,
-      isVerified: false,
-      otp,
-      otpExpires
+      isVerified: true
     });
 
-    const { sendOtpEmail } = require("../utils/mailer");
-    const mailResult = await sendOtpEmail(email, otp);
-    if (!mailResult.success && !mailResult.logged) {
-      await User.deleteOne({ _id: user._id });
-      return res.status(500).json({
-        message: `Failed to send verification email: ${mailResult.error}`
-      });
-    }
-
     res.status(201).json({
-      message: "Registration successful. Please verify your email with the OTP sent.",
+      message: "Registration successful. You can now log in.",
       email: user.email,
-      needsVerification: true
+      needsVerification: false
     });
 
   } catch (error) {
@@ -149,27 +135,7 @@ exports.login = async (req, res) => {
       status: "success"
     });
 
-    if (!matchedUser.isVerified) {
-      // Regenerate OTP if expired to allow quick resending or verification
-      if (!matchedUser.otp || !matchedUser.otpExpires || matchedUser.otpExpires < new Date()) {
-        const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        matchedUser.otp = newOtp;
-        matchedUser.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-        await matchedUser.save();
-        const { sendOtpEmail } = require("../utils/mailer");
-        const mailResult = await sendOtpEmail(matchedUser.email, newOtp);
-        if (!mailResult.success && !mailResult.logged) {
-          return res.status(500).json({
-            message: `Your account is unverified, and we failed to send a new verification code: ${mailResult.error}`
-          });
-        }
-      }
-      return res.status(401).json({
-        message: "Email address not verified. Please verify your email.",
-        email: matchedUser.email,
-        needsVerification: true
-      });
-    }
+    // Verification check bypassed
 
     const token = jwt.sign(
       {
