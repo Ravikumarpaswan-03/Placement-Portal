@@ -9,6 +9,7 @@ function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("userRole");
   localStorage.removeItem("userName");
+  localStorage.removeItem("userEmail");
   window.location.href = "../index.html";
 }
 

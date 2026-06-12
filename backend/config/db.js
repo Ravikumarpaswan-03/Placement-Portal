@@ -19,13 +19,25 @@ const connectDB = async () => {
         email: adminEmail,
         passwordHash: hashedPassword,
         role: "admin",
-        isVerified: true
+        isVerified: true,
+        canCreateAdmin: true
       });
       console.log(`Primary Administrator '${adminEmail}' seeded successfully.`);
-    } else if (adminExists.isVerified !== true) {
-      adminExists.isVerified = true;
-      await adminExists.save();
-      console.log(`Updated Primary Administrator '${adminEmail}' to verified status.`);
+    } else {
+      let needsSave = false;
+      if (adminExists.isVerified !== true) {
+        adminExists.isVerified = true;
+        needsSave = true;
+        console.log(`Updated Primary Administrator '${adminEmail}' to verified status.`);
+      }
+      if (adminExists.canCreateAdmin !== true) {
+        adminExists.canCreateAdmin = true;
+        needsSave = true;
+        console.log(`Updated Primary Administrator '${adminEmail}' with canCreateAdmin permission.`);
+      }
+      if (needsSave) {
+        await adminExists.save();
+      }
     }
 
   } catch (error) {

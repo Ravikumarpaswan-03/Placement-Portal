@@ -2,6 +2,18 @@ const BASE_URL = window.API_BASE_URL || "http://localhost:5000";
 const AUTH_URL = `${BASE_URL}/api/auth`;
 const STATS_URL = `${BASE_URL}/api/dashboard/stats`;
 
+function togglePasswordVisibility(inputId, toggleEl) {
+  const passwordInput = document.getElementById(inputId);
+  if (!passwordInput) return;
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    toggleEl.textContent = "Hide";
+  } else {
+    passwordInput.type = "password";
+    toggleEl.textContent = "Show";
+  }
+}
+
 // Tab switcher logic
 let verificationEmail = "";
 let resetPasswordEmail = "";

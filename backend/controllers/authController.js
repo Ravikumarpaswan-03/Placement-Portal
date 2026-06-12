@@ -27,9 +27,16 @@ exports.register = async (req, res) => {
             message: "Access denied. Only existing administrators can register another administrator account."
           });
         }
+
+        const creatorAdmin = await User.findById(verified.id);
+        if (!creatorAdmin || creatorAdmin.canCreateAdmin !== true) {
+          return res.status(403).json({
+            message: "Access denied. You do not have permission to register new administrators. Only administrators with creation privilege can do this."
+          });
+        }
       } catch (err) {
         return res.status(401).json({
-          message: "Session expired or invalid administrator token."
+          message: err.message || "Session expired or invalid administrator token."
         });
       }
     }
@@ -292,6 +299,71 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: "Password reset successfully. You can now log in." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.adminResetPassword = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Only administrators can perform this action." });
+    }
+
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and new password are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = hashedPassword;
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: `Password for ${email} has been reset successfully.` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.assignAdminPermission = async (req, res) => {
+  try {
+    const requester = await User.findById(req.user.id);
+    if (!requester || requester.email !== "ravikumarofficial8459@gmail.com") {
+      return res.status(403).json({
+        message: "Access denied. Only the Master Administrator can delegate administrative creation rights."
+      });
+    }
+
+    const { email, canCreateAdmin } = req.body;
+
+    if (!email || canCreateAdmin === undefined) {
+      return res.status(400).json({ message: "Email and canCreateAdmin value are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.role !== "admin") {
+      return res.status(400).json({ message: "User is not an administrator. Permissions can only be delegated to other administrators." });
+    }
+
+    user.canCreateAdmin = !!canCreateAdmin;
+    await user.save();
+
+    res.status(200).json({
+      message: `Successfully updated privileges for ${email}. canCreateAdmin: ${user.canCreateAdmin}`
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
