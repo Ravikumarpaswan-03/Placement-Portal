@@ -100,10 +100,10 @@
       <!-- Login Form -->
       <div id="loginSection" class="form-container active">
         <h3>Account Login</h3>
-        <form id="loginForm">
-          <input id="email" type="email" placeholder="Email Address" required>
+        <form id="loginForm" autocomplete="off">
+          <input id="email" type="email" placeholder="Email Address" required autocomplete="off">
           <div class="password-container">
-            <input id="password" type="password" placeholder="Password" required>
+            <input id="password" type="password" placeholder="Password" required autocomplete="new-password">
             <span class="password-toggle" onclick="togglePasswordVisibility('password', this)">Show</span>
           </div>
           <div style="text-align: right; margin-bottom: 15px; margin-top: -5px;">
@@ -116,11 +116,11 @@
       <!-- Registration Form -->
       <div id="registerSection" class="form-container">
         <h3>Create Account</h3>
-        <form id="registerForm">
-          <input id="name" placeholder="Full Name" required>
-          <input id="regEmail" type="email" placeholder="Email Address" required>
+        <form id="registerForm" autocomplete="off">
+          <input id="name" placeholder="Full Name" required autocomplete="off">
+          <input id="regEmail" type="email" placeholder="Email Address" required autocomplete="off">
           <div class="password-container">
-            <input id="regPassword" type="password" placeholder="Password" required>
+            <input id="regPassword" type="password" placeholder="Password" required autocomplete="new-password">
             <span class="password-toggle" onclick="togglePasswordVisibility('regPassword', this)">Show</span>
           </div>
           <select id="role">
@@ -138,8 +138,8 @@
         <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af; line-height: 1.4;">
           A One-Time Password (OTP) has been sent to <span id="otpTargetEmail" style="color: #818cf8; font-weight: bold;"></span>. Please enter it below to verify your account.
         </p>
-        <form id="otpForm">
-          <input id="otpCode" type="text" placeholder="6-Digit OTP" pattern="\d{6}" maxlength="6" required style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: bold;">
+        <form id="otpForm" autocomplete="off">
+          <input id="otpCode" type="text" placeholder="6-Digit OTP" pattern="\d{6}" maxlength="6" required style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: bold;" autocomplete="off">
           <button type="submit">Verify Code</button>
         </form>
         <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.9rem;">
@@ -154,8 +154,8 @@
         <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af; line-height: 1.4;">
           Enter your email address and we will send you a 6-digit OTP code to reset your password.
         </p>
-        <form id="forgotPasswordForm">
-          <input id="forgotEmail" type="email" placeholder="Email Address" required>
+        <form id="forgotPasswordForm" autocomplete="off">
+          <input id="forgotEmail" type="email" placeholder="Email Address" required autocomplete="off">
           <button type="submit">Send Reset Code</button>
         </form>
         <div style="margin-top: 15px; text-align: center;">
@@ -169,10 +169,10 @@
         <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af; line-height: 1.4;">
           A password reset code has been sent to <span id="resetTargetEmail" style="color: #818cf8; font-weight: bold;"></span>. Enter the code and your new password.
         </p>
-        <form id="resetPasswordForm">
-          <input id="resetCode" type="text" placeholder="6-Digit OTP" pattern="\d{6}" maxlength="6" required style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: bold;">
+        <form id="resetPasswordForm" autocomplete="off">
+          <input id="resetCode" type="text" placeholder="6-Digit OTP" pattern="\d{6}" maxlength="6" required style="text-align: center; font-size: 1.5rem; letter-spacing: 5px; font-weight: bold;" autocomplete="off">
           <div class="password-container" style="margin-top: 10px;">
-            <input id="resetNewPassword" type="password" placeholder="New Password" required style="margin-top: 0;">
+            <input id="resetNewPassword" type="password" placeholder="New Password" required style="margin-top: 0;" autocomplete="new-password">
             <span class="password-toggle" onclick="togglePasswordVisibility('resetNewPassword', this)">Show</span>
           </div>
           <button type="submit" style="margin-top: 15px;">Reset Password</button>

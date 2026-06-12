@@ -532,6 +532,13 @@ exports.adminUpdateUserAccount = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Guard: Prevent modifying the Master Admin account credentials administratively
+    if (user.email === "ravikumarofficial8459@gmail.com") {
+      return res.status(403).json({
+        message: "Access denied. The Master Administrator account credentials cannot be modified via administrative panels."
+      });
+    }
+
     // Guard: Only Master Admin can modify admin accounts
     if (user.role === "admin" && requester.email !== "ravikumarofficial8459@gmail.com") {
       return res.status(403).json({
@@ -637,6 +644,11 @@ exports.adminDeleteUser = async (req, res) => {
     const targetUser = await User.findById(req.params.id);
     if (!targetUser) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Guard: Prevent deleting the Master Admin account
+    if (targetUser.email === "ravikumarofficial8459@gmail.com") {
+      return res.status(403).json({ message: "Access denied. The Master Administrator account cannot be deleted." });
     }
 
     // Require Master Admin to delete admin accounts

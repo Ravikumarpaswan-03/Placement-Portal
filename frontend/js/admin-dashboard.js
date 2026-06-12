@@ -151,6 +151,7 @@ async function handleAssignPermissionsSubmit(event) {
 window.editUserCredentials = editUserCredentials;
 window.cancelEditCredentials = cancelEditCredentials;
 window.deleteUserAccount = deleteUserAccount;
+window.openResetPassword = openResetPassword;
 
 async function loadUsers() {
   const token = localStorage.getItem("token");
@@ -178,11 +179,16 @@ async function loadUsers() {
     listElement.innerHTML = users.map(user => {
       const isTargetAdmin = user.role === "admin";
       const isMasterAdmin = currentUserEmail === "ravikumarofficial8459@gmail.com";
-      const canModify = !isTargetAdmin || isMasterAdmin;
+      const isMasterAdminAccount = user.email === "ravikumarofficial8459@gmail.com";
+      const canModify = (!isTargetAdmin || isMasterAdmin) && !isMasterAdminAccount;
 
       const editBtn = canModify
-        ? `<button onclick="editUserCredentials('${user._id}', '${user.name.replace(/'/g, "\\'")}', '${user.email}')" style="background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%); font-size: 0.8rem; padding: 6px 12px; margin-right: 5px;">Edit</button>`
-        : `<button disabled style="background: #374151; color: #9ca3af; cursor: not-allowed; font-size: 0.8rem; padding: 6px 12px; box-shadow: none; margin-right: 5px;">Edit</button>`;
+        ? `<button onclick="editUserCredentials('${user._id}', '${user.name.replace(/'/g, "\\'")}', '${user.email}')" style="background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%); font-size: 0.8rem; padding: 6px 12px; margin-right: 5px;">Edit Email</button>`
+        : `<button disabled style="background: #374151; color: #9ca3af; cursor: not-allowed; font-size: 0.8rem; padding: 6px 12px; box-shadow: none; margin-right: 5px;">Edit Email</button>`;
+
+      const resetBtn = canModify
+        ? `<button onclick="openResetPassword('${user.email}')" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); font-size: 0.8rem; padding: 6px 12px; margin-right: 5px;">Reset Password</button>`
+        : `<button disabled style="background: #374151; color: #9ca3af; cursor: not-allowed; font-size: 0.8rem; padding: 6px 12px; box-shadow: none; margin-right: 5px;">Reset Password</button>`;
 
       const deleteBtn = canModify
         ? `<button onclick="deleteUserAccount('${user._id}', '${user.email}', '${user.role}')" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); font-size: 0.8rem; padding: 6px 12px;">Delete</button>`
@@ -193,7 +199,7 @@ async function loadUsers() {
           <td style="padding: 10px; color: #ffffff;">${user.name}</td>
           <td style="padding: 10px; color: #d1d5db;">${user.email}</td>
           <td style="padding: 10px; text-transform: capitalize; color: #a78bfa;">${user.role}</td>
-          <td style="padding: 10px; white-space: nowrap;">${editBtn}${deleteBtn}</td>
+          <td style="padding: 10px; white-space: nowrap;">${editBtn}${resetBtn}${deleteBtn}</td>
         </tr>
       `;
     }).join("");
@@ -205,6 +211,24 @@ async function loadUsers() {
       listElement.innerHTML = `<tr><td colspan="4" style="padding: 10px; text-align: center; color: #ef4444;">Unable to load users credentials.</td></tr>`;
     }
   }
+}
+
+function openResetPassword(email) {
+  const emailInput = document.getElementById("resetUserEmail");
+  const passwordInput = document.getElementById("resetUserPassword");
+  if (!emailInput || !passwordInput) return;
+
+  emailInput.value = email;
+  passwordInput.value = "";
+  
+  const form = document.getElementById("resetUserPasswordForm");
+  if (form) {
+    const card = form.closest(".card");
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+  passwordInput.focus();
 }
 
 function editUserCredentials(id, name, email) {
@@ -317,8 +341,12 @@ async function loadLoginAttempts() {
 
       const matchedUser = (window.usersList || []).find(u => u.email === attempt.email);
       let actionBtn = "";
-      if (matchedUser) {
-        actionBtn = `<button onclick="editUserCredentials('${matchedUser._id}', '${matchedUser.name.replace(/'/g, "\\'")}', '${matchedUser.email}')" style="background: rgba(129, 140, 248, 0.2); color: #818cf8; font-size: 0.75rem; padding: 4px 8px; box-shadow: none; border: 1px solid rgba(129,140,248,0.3);">Edit User</button>`;
+      
+      if (attempt.email === "ravikumarofficial8459@gmail.com") {
+        actionBtn = `<button disabled style="background: #374151; color: #9ca3af; cursor: not-allowed; font-size: 0.75rem; padding: 4px 8px; box-shadow: none; border: 1px solid rgba(255,255,255,0.05);">Protected</button>`;
+      } else if (matchedUser) {
+        actionBtn = `<button onclick="editUserCredentials('${matchedUser._id}', '${matchedUser.name.replace(/'/g, "\\'")}', '${matchedUser.email}')" style="background: rgba(129, 140, 248, 0.2); color: #818cf8; font-size: 0.75rem; padding: 4px 8px; box-shadow: none; border: 1px solid rgba(129,140,248,0.3); margin-right: 5px;">Edit Email</button>` +
+                    `<button onclick="openResetPassword('${matchedUser.email}')" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; font-size: 0.75rem; padding: 4px 8px; box-shadow: none; border: 1px solid rgba(245,158,11,0.3);">Reset PW</button>`;
       } else {
         actionBtn = `<span style="font-size: 0.75rem; color: #6b7280;">Unregistered</span>`;
       }
