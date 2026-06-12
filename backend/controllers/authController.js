@@ -58,9 +58,13 @@ exports.register = async (req, res) => {
     });
 
     const { sendOtpEmail } = require("../utils/mailer");
-    sendOtpEmail(email, otp).catch(err => {
-      console.error(`Error sending email background task:`, err);
-    });
+    const mailResult = await sendOtpEmail(email, otp);
+    if (!mailResult.success && !mailResult.logged) {
+      await User.deleteOne({ _id: user._id });
+      return res.status(500).json({
+        message: `Failed to send verification email: ${mailResult.error}`
+      });
+    }
 
     res.status(201).json({
       message: "Registration successful. Please verify your email with the OTP sent.",
@@ -106,9 +110,12 @@ exports.login = async (req, res) => {
         user.otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
         await user.save();
         const { sendOtpEmail } = require("../utils/mailer");
-        sendOtpEmail(user.email, newOtp).catch(err => {
-          console.error(`Error sending email background task during login:`, err);
-        });
+        const mailResult = await sendOtpEmail(user.email, newOtp);
+        if (!mailResult.success && !mailResult.logged) {
+          return res.status(500).json({
+            message: `Your account is unverified, and we failed to send a new verification code: ${mailResult.error}`
+          });
+        }
       }
       return res.status(401).json({
         message: "Email address not verified. Please verify your email.",
@@ -215,7 +222,10 @@ exports.resendOtp = async (req, res) => {
     await user.save();
 
     const { sendOtpEmail } = require("../utils/mailer");
-    await sendOtpEmail(user.email, newOtp);
+    const mailResult = await sendOtpEmail(user.email, newOtp);
+    if (!mailResult.success && !mailResult.logged) {
+      return res.status(500).json({ message: `Failed to send email: ${mailResult.error}` });
+    }
 
     res.status(200).json({ message: "Verification code resent successfully" });
   } catch (error) {
@@ -242,7 +252,10 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     const { sendOtpEmail } = require("../utils/mailer");
-    await sendOtpEmail(user.email, resetOtp, "reset");
+    const mailResult = await sendOtpEmail(user.email, resetOtp, "reset");
+    if (!mailResult.success && !mailResult.logged) {
+      return res.status(500).json({ message: `Failed to send email: ${mailResult.error}` });
+    }
 
     res.status(200).json({ message: "Password reset code sent successfully" });
   } catch (error) {

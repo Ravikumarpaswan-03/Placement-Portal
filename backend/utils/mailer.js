@@ -23,11 +23,14 @@ const sendOtpEmail = async (email, otp, type = "verification") => {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         user: emailUser,
         pass: emailPass,
       },
+      family: 4 // Force IPv4 to prevent ENETUNREACH on IPv6 in environments like Render
     });
 
     const mailOptions = {
