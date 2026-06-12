@@ -36,7 +36,8 @@ function renderStudentList(students) {
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
             <div>
               <h4>${student.name}</h4>
-              <p><strong>Email:</strong> ${student.email}</p>
+              <p><strong>Profile Email:</strong> ${student.email}</p>
+              ${student.userId ? `<p><strong>Login Account Email:</strong> <span style="color: #818cf8; font-weight: bold;">${student.userId.email}</span></p>` : ""}
               <p><strong>Skills:</strong> ${(student.skills || []).join(", ") || "N/A"}</p>
               <p><strong>CGPA:</strong> ${student.cgpa || "N/A"}</p>
               <p><strong>Resume:</strong> ${student.resumeLink ? `<a href="${student.resumeLink}" target="_blank">View Resume</a>` : "N/A"}</p>

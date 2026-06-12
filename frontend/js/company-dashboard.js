@@ -47,4 +47,67 @@ async function loadDashboard() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", loadDashboard);
+// Expose togglePasswordVisibility to window
+window.togglePasswordVisibility = togglePasswordVisibility;
+
+function togglePasswordVisibility(inputId, toggleEl) {
+  const passwordInput = document.getElementById(inputId);
+  if (!passwordInput) return;
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    toggleEl.textContent = "Hide";
+  } else {
+    passwordInput.type = "password";
+    toggleEl.textContent = "Show";
+  }
+}
+
+function loadSelfAccountSettings() {
+  const selfNameInput = document.getElementById("companySelfName");
+  const selfEmailInput = document.getElementById("companySelfEmail");
+  if (selfNameInput) selfNameInput.value = localStorage.getItem("userName") || "";
+  if (selfEmailInput) selfEmailInput.value = localStorage.getItem("userEmail") || "";
+}
+
+async function handleCompanyAccountSettingsSubmit(event) {
+  event.preventDefault();
+  const name = document.getElementById("companySelfName").value;
+  const email = document.getElementById("companySelfEmail").value;
+  const password = document.getElementById("companySelfPassword").value;
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/update-account`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Your account credentials updated successfully!");
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userEmail", email);
+      document.getElementById("companySelfPassword").value = "";
+      loadSelfAccountSettings();
+    } else {
+      alert(data.message || "Failed to update settings.");
+    }
+  } catch (error) {
+    console.error("Self update error:", error);
+    alert("Error occurred while updating settings.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadDashboard();
+  loadSelfAccountSettings();
+
+  const companyAccountSettingsForm = document.getElementById("companyAccountSettingsForm");
+  if (companyAccountSettingsForm) {
+    companyAccountSettingsForm.addEventListener("submit", handleCompanyAccountSettingsSubmit);
+  }
+});

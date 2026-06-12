@@ -47,6 +47,19 @@
       <p id="placed">Loading...</p>
     </div>
   </div>
+<!-- Account Settings Card -->
+<div class="card">
+  <h3>Account Settings</h3>
+  <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Update your profile name, email, or change your login password credentials.</p>
+  <form id="companyAccountSettingsForm">
+    <input id="companySelfName" placeholder="My Full Name" required>
+    <input id="companySelfEmail" type="email" placeholder="My Email Address" required>
+    <div class="password-container">
+      <input id="companySelfPassword" type="password" placeholder="Confirm/Update My Password" required>
+      <span class="password-toggle" onclick="togglePasswordVisibility('companySelfPassword', this)">Show</span>
+    </div>
+    <button type="submit" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">Update My Account</button>
+  </form>
 </div>
 
 </div>

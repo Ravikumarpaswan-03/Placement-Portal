@@ -101,6 +101,82 @@
   </form>
 </div>
 
+<!-- Manage User Login Credentials -->
+<div class="card">
+  <h3>Manage User Login Credentials</h3>
+  <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">View and modify the login credentials (email and password) of every student, company, mentor, or administrator account.</p>
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 600px;">
+      <thead>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #818cf8;">
+          <th style="padding: 10px;">Name</th>
+          <th style="padding: 10px;">Email</th>
+          <th style="padding: 10px;">Role</th>
+          <th style="padding: 10px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="userCredentialsList">
+        <tr><td colspan="4" style="padding: 10px; text-align: center; color: #9ca3af;">Loading users...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Edit Credentials Form (Inline drawer style) -->
+<div id="editCredentialsCard" class="card" style="display: none; border-color: #818cf8; margin-top: 15px;">
+  <h4 id="editUserTitle">Edit User Credentials</h4>
+  <form id="editCredentialsForm" style="margin-top: 10px;">
+    <input type="hidden" id="editUserId">
+    <input id="editUserName" placeholder="Full Name" required>
+    <input id="editUserEmail" type="email" placeholder="Login Email Address" required>
+    <div class="password-container">
+      <input id="editUserPassword" type="password" placeholder="New Password (leave empty to keep current)">
+      <span class="password-toggle" onclick="togglePasswordVisibility('editUserPassword', this)">Show</span>
+    </div>
+    <div style="display: flex; gap: 15px; margin-top: 10px;">
+      <button type="submit" style="flex: 1; background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);">Save Credentials</button>
+      <button type="button" onclick="cancelEditCredentials()" style="flex: 1; background: rgba(255,255,255,0.05); color: #f3f4f6; box-shadow: none;">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<!-- Login Attempt History & Auditing -->
+<div class="card">
+  <h3>Login Attempt History & Auditing</h3>
+  <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Track all successful and failed login entries, including the email and password attempted.</p>
+  <div style="overflow-x: auto; max-height: 300px; overflow-y: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 600px;">
+      <thead>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #818cf8;">
+          <th style="padding: 8px;">Time</th>
+          <th style="padding: 8px;">Email Address</th>
+          <th style="padding: 8px;">Password Attempted</th>
+          <th style="padding: 8px;">Status</th>
+          <th style="padding: 8px;">Action</th>
+        </tr>
+      </thead>
+      <tbody id="loginAttemptsList">
+        <tr><td colspan="5" style="padding: 8px; text-align: center; color: #9ca3af;">Loading history...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Account Settings Card -->
+<div class="card">
+  <h3>Account Settings</h3>
+  <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Change your own administrator profile name, email, or password credentials.</p>
+  <form id="adminAccountSettingsForm">
+    <input id="adminSelfName" placeholder="My Full Name" required>
+    <input id="adminSelfEmail" type="email" placeholder="My Email Address" required>
+    <div class="password-container">
+      <input id="adminSelfPassword" type="password" placeholder="Confirm/Update My Password" required>
+      <span class="password-toggle" onclick="togglePasswordVisibility('adminSelfPassword', this)">Show</span>
+    </div>
+    <button type="submit" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">Update My Account</button>
+  </form>
+</div>
+
 </div>
 
 <script src="../js/config.js"></script>

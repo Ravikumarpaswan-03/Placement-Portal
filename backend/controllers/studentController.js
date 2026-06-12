@@ -4,7 +4,7 @@ const User = require("../models/User");
 // Get All Students
 exports.getStudents = async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find().populate("userId", "email name role");
     res.json(students);
   } catch (error) {
     res.status(500).json({

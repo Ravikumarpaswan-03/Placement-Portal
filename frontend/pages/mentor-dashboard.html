@@ -99,6 +99,19 @@
         </tbody>
       </table>
     </div>
+  <!-- Account Settings Card -->
+  <div class="card">
+    <h3>Account Settings</h3>
+    <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Update your profile name, email, or change your login password credentials.</p>
+    <form id="mentorAccountSettingsForm">
+      <input id="mentorSelfName" placeholder="My Full Name" required>
+      <input id="mentorSelfEmail" type="email" placeholder="My Email Address" required>
+      <div class="password-container">
+        <input id="mentorSelfPassword" type="password" placeholder="Confirm/Update My Password" required>
+        <span class="password-toggle" onclick="togglePasswordVisibility('mentorSelfPassword', this)">Show</span>
+      </div>
+      <button type="submit" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">Update My Account</button>
+    </form>
   </div>
 
 </div>

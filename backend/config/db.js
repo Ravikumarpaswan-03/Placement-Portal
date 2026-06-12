@@ -6,6 +6,20 @@ const connectDB = async () => {
 
     console.log("MongoDB Connected");
 
+    // Drop unique indexes on email to enable multi-account support
+    try {
+      await mongoose.connection.collection("users").dropIndex("email_1");
+      console.log("Dropped unique index email_1 from users collection.");
+    } catch (e) {
+      // Index did not exist or was already dropped
+    }
+    try {
+      await mongoose.connection.collection("students").dropIndex("email_1");
+      console.log("Dropped unique index email_1 from students collection.");
+    } catch (e) {
+      // Index did not exist or was already dropped
+    }
+
     // Auto-seed primary administrator
     const User = require("../models/User");
     const bcrypt = require("bcryptjs");

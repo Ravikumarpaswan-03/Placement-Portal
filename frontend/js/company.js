@@ -43,6 +43,7 @@ function renderCompanyList(companies) {
           <div>
             <h4>${company.name || company.companyName}</h4>
             <p><strong>Contact Email:</strong> ${company.contactEmail || company.email || "N/A"}</p>
+            ${company.userId ? `<p><strong>Login Account Email:</strong> <span style="color: #818cf8; font-weight: bold;">${company.userId.email}</span></p>` : ""}
             <p><strong>Sector:</strong> ${company.sector || "N/A"}</p>
             <p><strong>Website:</strong> ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : "N/A"}</p>
             <p><strong>GSTIN:</strong> ${company.gstin || "N/A"}</p>

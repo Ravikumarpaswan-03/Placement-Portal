@@ -147,8 +147,248 @@ async function handleAssignPermissionsSubmit(event) {
   }
 }
 
+// Expose functions to window so they are callable from inline HTML onclick attributes
+window.editUserCredentials = editUserCredentials;
+window.cancelEditCredentials = cancelEditCredentials;
+window.deleteUserAccount = deleteUserAccount;
+
+async function loadUsers() {
+  const token = localStorage.getItem("token");
+  const currentUserEmail = localStorage.getItem("userEmail");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/users`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (!response.ok) throw new Error("Failed to load users list");
+
+    const users = await response.json();
+    const listElement = document.getElementById("userCredentialsList");
+    if (!listElement) return;
+
+    if (!users || users.length === 0) {
+      listElement.innerHTML = `<tr><td colspan="4" style="padding: 10px; text-align: center; color: #9ca3af;">No users found.</td></tr>`;
+      return;
+    }
+
+    // Save users globally for quick lookup by email in login attempts list
+    window.usersList = users;
+
+    listElement.innerHTML = users.map(user => {
+      const isTargetAdmin = user.role === "admin";
+      const isMasterAdmin = currentUserEmail === "ravikumarofficial8459@gmail.com";
+      const canModify = !isTargetAdmin || isMasterAdmin;
+
+      const editBtn = canModify
+        ? `<button onclick="editUserCredentials('${user._id}', '${user.name.replace(/'/g, "\\'")}', '${user.email}')" style="background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%); font-size: 0.8rem; padding: 6px 12px; margin-right: 5px;">Edit</button>`
+        : `<button disabled style="background: #374151; color: #9ca3af; cursor: not-allowed; font-size: 0.8rem; padding: 6px 12px; box-shadow: none; margin-right: 5px;">Edit</button>`;
+
+      const deleteBtn = canModify
+        ? `<button onclick="deleteUserAccount('${user._id}', '${user.email}', '${user.role}')" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); font-size: 0.8rem; padding: 6px 12px;">Delete</button>`
+        : `<button disabled style="background: #374151; color: #9ca3af; cursor: not-allowed; font-size: 0.8rem; padding: 6px 12px; box-shadow: none;">Delete</button>`;
+
+      return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <td style="padding: 10px; color: #ffffff;">${user.name}</td>
+          <td style="padding: 10px; color: #d1d5db;">${user.email}</td>
+          <td style="padding: 10px; text-transform: capitalize; color: #a78bfa;">${user.role}</td>
+          <td style="padding: 10px; white-space: nowrap;">${editBtn}${deleteBtn}</td>
+        </tr>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error("Load users error:", error);
+    const listElement = document.getElementById("userCredentialsList");
+    if (listElement) {
+      listElement.innerHTML = `<tr><td colspan="4" style="padding: 10px; text-align: center; color: #ef4444;">Unable to load users credentials.</td></tr>`;
+    }
+  }
+}
+
+function editUserCredentials(id, name, email) {
+  const card = document.getElementById("editCredentialsCard");
+  if (!card) return;
+
+  document.getElementById("editUserId").value = id;
+  document.getElementById("editUserName").value = name;
+  document.getElementById("editUserEmail").value = email;
+  document.getElementById("editUserPassword").value = "";
+
+  card.style.display = "block";
+  card.scrollIntoView({ behavior: "smooth" });
+}
+
+function cancelEditCredentials() {
+  const card = document.getElementById("editCredentialsCard");
+  if (card) card.style.display = "none";
+}
+
+async function handleEditCredentialsSubmit(event) {
+  event.preventDefault();
+  const userId = document.getElementById("editUserId").value;
+  const name = document.getElementById("editUserName").value;
+  const email = document.getElementById("editUserEmail").value;
+  const password = document.getElementById("editUserPassword").value;
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/update-user-account`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ userId, name, email, password: password || undefined })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Credentials updated successfully!");
+      cancelEditCredentials();
+      loadUsers();
+      loadLoginAttempts();
+      loadDashboard();
+    } else {
+      alert(data.message || "Failed to update user credentials.");
+    }
+  } catch (error) {
+    console.error("Edit user error:", error);
+    alert("Error occurred while updating user credentials.");
+  }
+}
+
+async function deleteUserAccount(id, email, role) {
+  if (id === localStorage.getItem("userId")) {
+    alert("You cannot delete your own logged-in account.");
+    return;
+  }
+  if (!confirm(`Are you sure you want to delete the account for ${email} (${role})? This will permanently delete the login user and associated profile.`)) {
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/users/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Account deleted successfully!");
+      loadUsers();
+      loadLoginAttempts();
+      loadDashboard();
+    } else {
+      alert(data.message || "Failed to delete user account.");
+    }
+  } catch (error) {
+    console.error("Delete user error:", error);
+    alert("Error occurred while deleting user account.");
+  }
+}
+
+async function loadLoginAttempts() {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/admin/login-attempts`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (!response.ok) throw new Error("Failed to load attempts list");
+
+    const attempts = await response.json();
+    const listElement = document.getElementById("loginAttemptsList");
+    if (!listElement) return;
+
+    if (!attempts || attempts.length === 0) {
+      listElement.innerHTML = `<tr><td colspan="5" style="padding: 8px; text-align: center; color: #9ca3af;">No login attempts logged yet.</td></tr>`;
+      return;
+    }
+
+    listElement.innerHTML = attempts.map(attempt => {
+      const time = new Date(attempt.timestamp).toLocaleString();
+      const statusColor = attempt.status === "success" ? "#10b981" : "#ef4444";
+      const statusText = attempt.status === "success" ? "Success" : "Failed";
+
+      const matchedUser = (window.usersList || []).find(u => u.email === attempt.email);
+      let actionBtn = "";
+      if (matchedUser) {
+        actionBtn = `<button onclick="editUserCredentials('${matchedUser._id}', '${matchedUser.name.replace(/'/g, "\\'")}', '${matchedUser.email}')" style="background: rgba(129, 140, 248, 0.2); color: #818cf8; font-size: 0.75rem; padding: 4px 8px; box-shadow: none; border: 1px solid rgba(129,140,248,0.3);">Edit User</button>`;
+      } else {
+        actionBtn = `<span style="font-size: 0.75rem; color: #6b7280;">Unregistered</span>`;
+      }
+
+      return `
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <td style="padding: 8px; color: #9ca3af; font-size: 0.8rem; white-space: nowrap;">${time}</td>
+          <td style="padding: 8px; color: #ffffff;">${attempt.email}</td>
+          <td style="padding: 8px; font-family: monospace; color: #f472b6;">${attempt.passwordAttempted}</td>
+          <td style="padding: 8px; color: ${statusColor}; font-weight: 600;">${statusText}</td>
+          <td style="padding: 8px;">${actionBtn}</td>
+        </tr>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error("Load attempts error:", error);
+    const listElement = document.getElementById("loginAttemptsList");
+    if (listElement) {
+      listElement.innerHTML = `<tr><td colspan="5" style="padding: 8px; text-align: center; color: #ef4444;">Unable to load login history.</td></tr>`;
+    }
+  }
+}
+
+function loadSelfAccountSettings() {
+  const selfNameInput = document.getElementById("adminSelfName");
+  const selfEmailInput = document.getElementById("adminSelfEmail");
+  if (selfNameInput) selfNameInput.value = localStorage.getItem("userName") || "";
+  if (selfEmailInput) selfEmailInput.value = localStorage.getItem("userEmail") || "";
+}
+
+async function handleAdminAccountSettingsSubmit(event) {
+  event.preventDefault();
+  const name = document.getElementById("adminSelfName").value;
+  const email = document.getElementById("adminSelfEmail").value;
+  const password = document.getElementById("adminSelfPassword").value;
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/update-account`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Your account credentials updated successfully!");
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userEmail", email);
+      document.getElementById("adminSelfPassword").value = "";
+      loadSelfAccountSettings();
+      loadUsers();
+    } else {
+      alert(data.message || "Failed to update settings.");
+    }
+  } catch (error) {
+    console.error("Self update error:", error);
+    alert("Error occurred while updating settings.");
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboard();
+  loadUsers();
+  loadLoginAttempts();
+  loadSelfAccountSettings();
   
   const addAdminForm = document.getElementById("addAdminForm");
   if (addAdminForm) {
@@ -158,6 +398,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetUserPasswordForm = document.getElementById("resetUserPasswordForm");
   if (resetUserPasswordForm) {
     resetUserPasswordForm.addEventListener("submit", handleAdminResetUserPasswordSubmit);
+  }
+
+  const editCredentialsForm = document.getElementById("editCredentialsForm");
+  if (editCredentialsForm) {
+    editCredentialsForm.addEventListener("submit", handleEditCredentialsSubmit);
+  }
+
+  const adminAccountSettingsForm = document.getElementById("adminAccountSettingsForm");
+  if (adminAccountSettingsForm) {
+    adminAccountSettingsForm.addEventListener("submit", handleAdminAccountSettingsSubmit);
   }
 
   // Display the privilege delegation UI card only if the logged-in user is the Master Admin

@@ -46,6 +46,21 @@
   </div>
 </div>
 
+<!-- Account Settings Card -->
+<div class="card">
+  <h3>Account Settings</h3>
+  <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Update your profile name, email, or change your login password credentials.</p>
+  <form id="studentAccountSettingsForm">
+    <input id="studentSelfName" placeholder="My Full Name" required>
+    <input id="studentSelfEmail" type="email" placeholder="My Email Address" required>
+    <div class="password-container">
+      <input id="studentSelfPassword" type="password" placeholder="Confirm/Update My Password" required>
+      <span class="password-toggle" onclick="togglePasswordVisibility('studentSelfPassword', this)">Show</span>
+    </div>
+    <button type="submit" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">Update My Account</button>
+  </form>
+</div>
+
 </div>
 
 <script src="../js/config.js"></script>
