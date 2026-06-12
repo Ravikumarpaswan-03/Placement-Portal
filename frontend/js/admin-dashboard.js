@@ -152,6 +152,18 @@ window.editUserCredentials = editUserCredentials;
 window.cancelEditCredentials = cancelEditCredentials;
 window.deleteUserAccount = deleteUserAccount;
 window.openResetPassword = openResetPassword;
+window.toggleAccountSettings = toggleAccountSettings;
+
+function toggleAccountSettings() {
+  const card = document.getElementById("accountSettingsCard");
+  if (!card) return;
+  if (card.style.display === "none" || card.style.display === "") {
+    card.style.display = "block";
+    card.scrollIntoView({ behavior: "smooth" });
+  } else {
+    card.style.display = "none";
+  }
+}
 
 async function loadUsers() {
   const token = localStorage.getItem("token");

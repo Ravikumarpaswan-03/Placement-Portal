@@ -56,8 +56,20 @@ async function loadStudentDashboard() {
   }
 }
 
-// Expose togglePasswordVisibility to window
+// Expose togglePasswordVisibility and toggleAccountSettings to window
 window.togglePasswordVisibility = togglePasswordVisibility;
+window.toggleAccountSettings = toggleAccountSettings;
+
+function toggleAccountSettings() {
+  const card = document.getElementById("accountSettingsCard");
+  if (!card) return;
+  if (card.style.display === "none" || card.style.display === "") {
+    card.style.display = "block";
+    card.scrollIntoView({ behavior: "smooth" });
+  } else {
+    card.style.display = "none";
+  }
+}
 
 function togglePasswordVisibility(inputId, toggleEl) {
   const passwordInput = document.getElementById(inputId);

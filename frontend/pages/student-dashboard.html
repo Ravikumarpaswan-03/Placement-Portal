@@ -19,6 +19,7 @@
   <button onclick="navigateTo('student.html')">Edit Profile</button>
   <button onclick="navigateTo('jobs.html')">View Jobs</button>
   <button onclick="navigateTo('applications.html')">My Applications</button>
+  <button onclick="toggleAccountSettings()">Account Settings</button>
   <button onclick="logout()">Logout</button>
 </div>
 
@@ -47,7 +48,7 @@
 </div>
 
 <!-- Account Settings Card -->
-<div class="card">
+<div class="card" id="accountSettingsCard" style="display: none;">
   <h3>Account Settings</h3>
   <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Update your profile name, email, or change your login password credentials.</p>
   <form id="studentAccountSettingsForm" autocomplete="off">

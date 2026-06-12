@@ -52,6 +52,7 @@
       <button onclick="location.href='student.html'">View Students</button>
       <button onclick="location.href='companies.html'">View Companies</button>
       <button onclick="location.href='jobs.html'">View Jobs</button>
+      <button onclick="toggleAccountSettings()">Account Settings</button>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
@@ -100,7 +101,7 @@
       </table>
     </div>
   <!-- Account Settings Card -->
-  <div class="card">
+  <div class="card" id="accountSettingsCard" style="display: none;">
     <h3>Account Settings</h3>
     <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Update your profile name, email, or change your login password credentials.</p>
     <form id="mentorAccountSettingsForm" autocomplete="off">
