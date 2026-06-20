@@ -4,6 +4,7 @@
 <head>
 <title>Company Dashboard</title>
 <link rel="stylesheet" href="../css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -63,11 +64,18 @@
   </form>
 </div>
 
+<div class="card">
+  <h2>My Jobs Application Distribution</h2>
+  <div class="chart-container">
+    <canvas id="analyticsChart" style="max-height: 250px;"></canvas>
+  </div>
 </div>
 
+</div>
 <script src="../js/config.js"></script>
 <script src="../js/company-dashboard.js"></script>
 
 </body>
 
 </html>
+

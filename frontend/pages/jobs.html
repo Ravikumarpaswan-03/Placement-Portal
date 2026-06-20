@@ -33,28 +33,49 @@
 
   <!-- Search & Filter Card -->
   <div class="card">
-    <h3>Search & Filter Jobs</h3>
-    <form id="searchForm" onsubmit="event.preventDefault(); getJobs();">
+    <h3>Search, Filter & Sort Jobs</h3>
+    <form id="searchForm" onsubmit="event.preventDefault(); filterJobs();">
+      <div style="margin-bottom: 15px;">
+        <label style="font-size: 0.85rem; color: #9ca3af;">Universal Search (matches Title, Company, Skills, or Application Status)</label>
+        <input id="searchUniversal" placeholder="e.g. Software Developer, TCS, React, Applied, Selected..." style="width: 100%; box-sizing: border-box; margin-top: 5px;">
+      </div>
       <div class="search-grid">
-        <div>
-          <label style="font-size: 0.85rem; color: #9ca3af;">Job Title / Role</label>
-          <input id="searchTitle" placeholder="e.g. Software Developer">
-        </div>
-        <div>
-          <label style="font-size: 0.85rem; color: #9ca3af;">Company Name</label>
-          <input id="searchCompany" placeholder="e.g. TCS">
-        </div>
         <div>
           <label style="font-size: 0.85rem; color: #9ca3af;">Location</label>
           <input id="searchLocation" placeholder="e.g. Pune">
         </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Required Skill</label>
+          <input id="searchSkills" placeholder="e.g. React">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Minimum Package (LPA)</label>
+          <input id="searchMinPackage" type="number" step="0.1" placeholder="e.g. 5.5">
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Deadline Status</label>
+          <select id="searchDeadline" style="width: 100%; padding: 10px; background: rgba(31, 41, 55, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: white; box-sizing: border-box;">
+            <option value="all">All Jobs</option>
+            <option value="active">Active Only</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: #9ca3af;">Sort By</label>
+          <select id="sortJobsBy" style="width: 100%; padding: 10px; background: rgba(31, 41, 55, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: white; box-sizing: border-box;">
+            <option value="newest">Newest First</option>
+            <option value="package">Highest Package</option>
+            <option value="relevance">Most Relevant (Skills Match)</option>
+            <option value="status">Status Priority</option>
+          </select>
+        </div>
       </div>
-      <div class="search-actions">
+      <div class="search-actions" style="margin-top: 15px;">
         <button type="button" onclick="clearFilters()" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); box-shadow: none;">Clear</button>
-        <button type="submit">Search</button>
+        <button type="submit">Apply Filters</button>
       </div>
     </form>
   </div>
+
 
   <!-- Jobs List -->
   <div class="card">

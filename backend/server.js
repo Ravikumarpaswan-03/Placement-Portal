@@ -54,10 +54,11 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-
-// Serve Frontend Static Files
+app.use("/api/analytics", require("./routes/analyticsRoutes"));
+// Serve Frontend Static Files & Uploads
 const path = require("path");
 app.use(express.static(path.join(__dirname, "../frontend")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 // 404 Route

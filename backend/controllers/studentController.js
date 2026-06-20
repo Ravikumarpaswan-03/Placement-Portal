@@ -96,3 +96,35 @@ exports.deleteStudent = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.uploadResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Please upload a PDF file." });
+    }
+
+    let student = await Student.findOne({ userId: req.user.id });
+    if (!student) {
+      const user = await User.findById(req.user.id);
+      student = await Student.create({
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        skills: []
+      });
+    }
+
+    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    student.resumeUrl = fileUrl;
+    student.resumeLink = fileUrl;
+    await student.save();
+
+    res.json({
+      message: "Resume uploaded successfully.",
+      resumeUrl: fileUrl,
+      resumeLink: fileUrl
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

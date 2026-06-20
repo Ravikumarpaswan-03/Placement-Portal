@@ -325,3 +325,54 @@ a:hover {
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.25);
 }
+
+/* Chart Container styling */
+.chart-container {
+    position: relative;
+    width: 100%;
+    margin-top: 20px;
+    background: rgba(31, 41, 55, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+/* File input custom container */
+.file-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-upload-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+}
+
+.file-upload-row input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px;
+    background: rgba(31, 41, 55, 0.5);
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    color: #d1d5db;
+    transition: all 0.25s ease;
+    font-size: 0.95rem;
+    width: 100%;
+    text-align: center;
+}
+
+.custom-file-upload:hover {
+    border-color: #818cf8;
+    color: #ffffff;
+    background: rgba(31, 41, 55, 0.8);
+}

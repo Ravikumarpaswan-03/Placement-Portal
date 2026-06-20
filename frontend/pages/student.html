@@ -23,8 +23,22 @@
         <input id="studentEmail" type="email" placeholder="Email" required>
         <input id="studentSkills" placeholder="Skills (comma separated)">
         <input id="studentCgpa" placeholder="CGPA" type="number" step="0.01" min="0" max="10">
-        <input id="studentResume" placeholder="Resume Link (e.g. Google Drive/Dropbox URL)">
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; width: 100%;">
+        <div class="file-upload-wrapper">
+          <label style="font-size: 0.9rem; color: #a78bfa; font-weight: 500; display: block; margin-bottom: 6px;">Resume Link (e.g. Google Drive/Dropbox URL)</label>
+          <input id="studentResume" placeholder="Paste Resume Link URL">
+          
+          <label style="font-size: 0.9rem; color: #a78bfa; font-weight: 500; display: block; margin-top: 10px; margin-bottom: 6px;">Or Upload PDF Resume</label>
+          <div class="file-upload-row">
+            <label for="studentResumeFile" class="custom-file-upload" id="fileUploadLabel" style="flex: 1;">
+              📁 Choose PDF File...
+            </label>
+            <input type="file" id="studentResumeFile" accept=".pdf">
+            <button type="button" id="uploadResumeBtn" style="padding: 14px 20px; font-size: 0.95rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); min-width: 120px;">Upload PDF</button>
+          </div>
+          <p id="uploadStatus" style="font-size: 0.85rem; color: #10b981; margin-top: 4px; display: none;"></p>
+        </div>
+
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; width: 100%; margin-top: 10px;">
           <button type="submit" style="flex: 1;">Save Changes</button>
           <button id="deleteAccountBtn" type="button" onclick="deleteSelfAccount()" style="display: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4); flex: 1;">Delete Account</button>
         </div>
@@ -34,8 +48,17 @@
   <!-- Students List Card (Admin Only) -->
   <div id="studentListSection" class="card" style="display: none;">
     <h3>All Students</h3>
+    
+    <!-- Smart Search Bar -->
+    <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; margin-top: 10px;">
+      <input type="text" id="searchStudentName" placeholder="Search by name..." style="flex: 1; min-width: 180px;">
+      <input type="text" id="searchStudentSkills" placeholder="Filter by skills (e.g. react)..." style="flex: 1; min-width: 180px;">
+      <input type="number" id="searchStudentCgpa" step="0.1" min="0" max="10" placeholder="Min CGPA..." style="width: 120px;">
+    </div>
+
     <div id="studentList">Loading students...</div>
   </div>
+
 
 </div>
 

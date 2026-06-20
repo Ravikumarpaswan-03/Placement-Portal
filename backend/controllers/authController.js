@@ -336,15 +336,47 @@ exports.adminResetPassword = async (req, res) => {
       return res.status(403).json({ message: "Access denied. Only administrators can perform this action." });
     }
 
-    const { email, newPassword } = req.body;
+    const { userId, email, newPassword } = req.body;
 
-    if (!email || !newPassword) {
-      return res.status(400).json({ message: "Email and new password are required" });
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required" });
     }
 
-    const user = await User.findOne({ email });
+    let user;
+    if (userId) {
+      user = await User.findById(userId);
+    } else if (email) {
+      user = await User.findOne({ email });
+    }
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Guard: Prevent modifying the Master Admin account credentials administratively
+    if (user.email === "ravikumarofficial8459@gmail.com") {
+      return res.status(403).json({
+        message: "Access denied. The Master Administrator account credentials cannot be modified via administrative panels."
+      });
+    }
+
+    // Guard: Only Master Admin can modify admin accounts
+    const requester = await User.findById(req.user.id);
+    if (user.role === "admin" && requester.email !== "ravikumarofficial8459@gmail.com") {
+      return res.status(403).json({
+        message: "Access denied. Only the Master Administrator can modify administrator accounts."
+      });
+    }
+
+    // Check password uniqueness among other accounts with the same email
+    const otherAccounts = await User.find({ email: user.email, _id: { $ne: user._id } });
+    for (const account of otherAccounts) {
+      const match = await bcrypt.compare(newPassword, account.passwordHash);
+      if (match) {
+        return res.status(400).json({
+          message: "Another account with this email already uses this password. Please choose a different password to distinguish your accounts."
+        });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -354,7 +386,7 @@ exports.adminResetPassword = async (req, res) => {
     user.otpExpires = undefined;
     await user.save();
 
-    res.status(200).json({ message: `Password for ${email} has been reset successfully.` });
+    res.status(200).json({ message: `Password for ${user.email} has been reset successfully.` });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

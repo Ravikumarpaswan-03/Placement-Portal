@@ -63,23 +63,22 @@ async function loadDashboard() {
       
       if (!applications || applications.length === 0) {
         reportBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9ca3af;">No applications have been submitted yet.</td></tr>`;
-        return;
+      } else {
+        reportBody.innerHTML = applications
+          .map(app => {
+            const appliedDate = app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : "N/A";
+            const badgeClass = getBadgeClass(app.status);
+            return `
+              <tr>
+                <td><strong>${app.studentName}</strong></td>
+                <td>${app.jobTitle}</td>
+                <td><span class="badge ${badgeClass}">${app.status}</span></td>
+                <td>${appliedDate}</td>
+              </tr>
+            `;
+          })
+          .join("");
       }
-
-      reportBody.innerHTML = applications
-        .map(app => {
-          const appliedDate = app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : "N/A";
-          const badgeClass = getBadgeClass(app.status);
-          return `
-            <tr>
-              <td><strong>${app.studentName}</strong></td>
-              <td>${app.jobTitle}</td>
-              <td><span class="badge ${badgeClass}">${app.status}</span></td>
-              <td>${appliedDate}</td>
-            </tr>
-          `;
-        })
-        .join("");
     }
   } catch (error) {
     console.error("Failed to load applications:", error);
@@ -87,6 +86,64 @@ async function loadDashboard() {
     if (reportBody) {
       reportBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">Unable to load application progress reports.</td></tr>`;
     }
+  }
+
+  // 3. Fetch analytics for pipeline chart
+  try {
+    const analyticsResponse = await fetch(`${BASE_URL}/api/analytics/dashboard-data`, {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (analyticsResponse.ok) {
+      const analyticsData = await analyticsResponse.json();
+      const dist = analyticsData.applicationDistribution || {};
+      
+      const applied = dist.Applied || 0;
+      const shortlisted = dist.Shortlisted || 0;
+      const selected = dist.Selected || 0;
+      const rejected = dist.Rejected || 0;
+
+      const ctx = document.getElementById("analyticsChart");
+      if (ctx) {
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Applied", "Shortlisted", "Selected", "Rejected"],
+            datasets: [{
+              label: "Applications",
+              data: [applied, shortlisted, selected, rejected],
+              backgroundColor: [
+                "rgba(99, 102, 241, 0.7)",  // indigo
+                "rgba(167, 139, 250, 0.7)", // purple
+                "rgba(16, 185, 129, 0.7)",  // green
+                "rgba(239, 68, 68, 0.7)"    // red
+              ],
+              borderColor: [
+                "rgba(99, 102, 241, 1)",
+                "rgba(167, 139, 250, 1)",
+                "rgba(16, 185, 129, 1)",
+                "rgba(239, 68, 68, 1)"
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { color: "#f3f4f6" }
+              }
+            }
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load analytics charts:", err);
   }
 }
 
@@ -159,6 +216,7 @@ async function handleMentorAccountSettingsSubmit(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboard();
+
   loadSelfAccountSettings();
 
   const mentorAccountSettingsForm = document.getElementById("mentorAccountSettingsForm");

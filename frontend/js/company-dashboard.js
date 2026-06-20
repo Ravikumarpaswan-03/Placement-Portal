@@ -14,10 +14,16 @@ function logout() {
 }
 
 async function loadDashboard() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "../index.html";
+    return;
+  }
+
   try {
     const response = await fetch(`${API_URL}/stats`, {
       headers: {
-        "Authorization": "Bearer " + localStorage.getItem("token")
+        "Authorization": "Bearer " + token
       }
     });
     
@@ -44,6 +50,64 @@ async function loadDashboard() {
     if (elements.placed) elements.placed.innerText = data.placed || 0;
   } catch (error) {
     console.error(error);
+  }
+
+  // Fetch company analytics for pipeline chart
+  try {
+    const analyticsResponse = await fetch(`${BASE_URL}/api/analytics/dashboard-data`, {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (analyticsResponse.ok) {
+      const analyticsData = await analyticsResponse.json();
+      const dist = analyticsData.applicationDistribution || {};
+      
+      const applied = dist.Applied || 0;
+      const shortlisted = dist.Shortlisted || 0;
+      const selected = dist.Selected || 0;
+      const rejected = dist.Rejected || 0;
+
+      const ctx = document.getElementById("analyticsChart");
+      if (ctx) {
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Applied", "Shortlisted", "Selected", "Rejected"],
+            datasets: [{
+              label: "Applications Received",
+              data: [applied, shortlisted, selected, rejected],
+              backgroundColor: [
+                "rgba(99, 102, 241, 0.7)",  // indigo
+                "rgba(167, 139, 250, 0.7)", // purple
+                "rgba(16, 185, 129, 0.7)",  // green
+                "rgba(239, 68, 68, 0.7)"    // red
+              ],
+              borderColor: [
+                "rgba(99, 102, 241, 1)",
+                "rgba(167, 139, 250, 1)",
+                "rgba(16, 185, 129, 1)",
+                "rgba(239, 68, 68, 1)"
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: { color: "#f3f4f6" }
+              }
+            }
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error rendering company chart:", err);
   }
 }
 
@@ -116,6 +180,7 @@ async function handleCompanyAccountSettingsSubmit(event) {
 
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboard();
+
   loadSelfAccountSettings();
 
   const companyAccountSettingsForm = document.getElementById("companyAccountSettingsForm");

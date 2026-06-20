@@ -1,6 +1,7 @@
 const BASE_URL = window.API_BASE_URL || "http://localhost:5000";
 const API_URL = `${BASE_URL}/api/students`;
 let currentStudentProfileId = null;
+let allStudents = [];
 
 function goBack() {
   const role = localStorage.getItem("userRole") || "student";
@@ -19,7 +20,7 @@ function renderStudentList(students) {
   if (!listElement) return;
 
   if (!students || students.length === 0) {
-    listElement.innerHTML = "<p>No students found.</p>";
+    listElement.innerHTML = "<p style='color: #9ca3af; text-align: center; padding: 20px 0;'>No students matched your search criteria.</p>";
     return;
   }
 
@@ -28,12 +29,12 @@ function renderStudentList(students) {
   listElement.innerHTML = students
     .map(student => {
       const deleteBtn = role === "admin"
-        ? `<button onclick="deleteStudent('${student._id}')" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); font-size: 0.85rem; padding: 6px 12px;">Delete</button>`
+        ? `<button onclick="deleteStudent('${student._id}')" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); font-size: 0.85rem; padding: 6px 12px; margin-top: 10px;">Delete</button>`
         : "";
 
       return `
         <div class="card" style="margin-bottom: 15px; border-color: rgba(255, 255, 255, 0.05);">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
               <h4>${student.name}</h4>
               <p><strong>Profile Email:</strong> ${student.email}</p>
@@ -50,15 +51,15 @@ function renderStudentList(students) {
     .join("");
 }
 
-// Fetch all students (Admin only)
+// Fetch all students (Admin/Mentor only)
 async function getStudents() {
   try {
     const response = await fetch(API_URL);
     if (!response.ok) {
       throw new Error("Failed to load students");
     }
-    const students = await response.json();
-    renderStudentList(students);
+    allStudents = await response.json();
+    filterStudents();
   } catch (error) {
     console.error(error);
     const listElement = document.getElementById("studentList");
@@ -66,6 +67,29 @@ async function getStudents() {
       listElement.innerHTML = "<p>Unable to load students.</p>";
     }
   }
+}
+
+// Filter students dynamically based on search inputs
+function filterStudents() {
+  const nameQuery = document.getElementById("searchStudentName")?.value.toLowerCase() || "";
+  const skillsQuery = document.getElementById("searchStudentSkills")?.value.toLowerCase() || "";
+  const cgpaQuery = parseFloat(document.getElementById("searchStudentCgpa")?.value) || 0;
+
+  const filtered = allStudents.filter(student => {
+    const nameMatch = !nameQuery || 
+      (student.name && student.name.toLowerCase().includes(nameQuery)) || 
+      (student.email && student.email.toLowerCase().includes(nameQuery));
+      
+    const skillsMatch = !skillsQuery || 
+      (student.skills && student.skills.some(skill => skill.toLowerCase().includes(skillsQuery)));
+      
+    const cgpaMatch = !cgpaQuery || 
+      (student.cgpa && student.cgpa >= cgpaQuery);
+
+    return nameMatch && skillsMatch && cgpaMatch;
+  });
+
+  renderStudentList(filtered);
 }
 
 // Fetch personal profile (Student only)
@@ -153,6 +177,67 @@ async function handleFormSubmit(event) {
   }
 }
 
+// Upload PDF Resume
+async function handleResumeUpload() {
+  const fileInput = document.getElementById("studentResumeFile");
+  const uploadStatus = document.getElementById("uploadStatus");
+  const token = localStorage.getItem("token");
+
+  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+    alert("Please select a PDF file to upload.");
+    return;
+  }
+
+  const file = fileInput.files[0];
+  if (file.type !== "application/pdf") {
+    alert("Only PDF files are allowed.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  try {
+    if (uploadStatus) {
+      uploadStatus.style.display = "block";
+      uploadStatus.style.color = "#a78bfa";
+      uploadStatus.innerText = "Uploading resume...";
+    }
+
+    const response = await fetch(`${API_URL}/profile/resume`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      if (uploadStatus) {
+        uploadStatus.style.color = "#10b981";
+        uploadStatus.innerText = "Resume uploaded successfully!";
+      }
+      // Prefill resume URL input box
+      const resumeInput = document.getElementById("studentResume");
+      if (resumeInput) {
+        resumeInput.value = data.resumeLink || data.resumeUrl;
+      }
+    } else {
+      if (uploadStatus) {
+        uploadStatus.style.color = "#ef4444";
+        uploadStatus.innerText = data.message || "Failed to upload resume.";
+      }
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    if (uploadStatus) {
+      uploadStatus.style.color = "#ef4444";
+      uploadStatus.innerText = "Error uploading resume. Check backend connection.";
+    }
+  }
+}
+
 // Delete student (Admin only)
 async function deleteStudent(studentId) {
   if (!confirm("Are you sure you want to delete this student and their account?")) {
@@ -236,6 +321,34 @@ document.addEventListener("DOMContentLoaded", () => {
     if (profileFormSection) profileFormSection.style.display = "none";
     if (studentListSection) studentListSection.style.display = "block";
     getStudents();
+  }
+
+  // Bind student filters
+  const nameSearch = document.getElementById("searchStudentName");
+  const skillsSearch = document.getElementById("searchStudentSkills");
+  const cgpaSearch = document.getElementById("searchStudentCgpa");
+
+  if (nameSearch) nameSearch.addEventListener("input", filterStudents);
+  if (skillsSearch) skillsSearch.addEventListener("input", filterStudents);
+  if (cgpaSearch) cgpaSearch.addEventListener("input", filterStudents);
+
+  // Bind PDF file input text change
+  const fileInput = document.getElementById("studentResumeFile");
+  const uploadLabel = document.getElementById("fileUploadLabel");
+  if (fileInput && uploadLabel) {
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length > 0) {
+        uploadLabel.innerText = "📄 " + fileInput.files[0].name;
+      } else {
+        uploadLabel.innerText = "📁 Choose PDF File...";
+      }
+    });
+  }
+
+  // Bind upload file button
+  const uploadBtn = document.getElementById("uploadResumeBtn");
+  if (uploadBtn) {
+    uploadBtn.addEventListener("click", handleResumeUpload);
   }
 
   const studentForm = document.getElementById("studentForm");

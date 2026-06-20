@@ -3,7 +3,9 @@ const API_URL = `${BASE_URL}/api/jobs`;
 const APP_URL = `${BASE_URL}/api/applications`;
 
 let studentProfile = null;
+let studentApplications = [];
 let currentEditJobId = null;
+let allJobs = [];
 
 function goBack() {
   const role = localStorage.getItem("userRole") || "student";
@@ -24,6 +26,15 @@ function clearFilters() {
   getJobs();
 }
 
+function matchJob(studentSkills, requiredSkills) {
+  const s = studentSkills.map(x => x.toLowerCase().trim()).filter(Boolean);
+  const r = requiredSkills.map(x => x.toLowerCase().trim()).filter(Boolean);
+  if (r.length === 0) return { score: 100, matched: [] };
+  const matched = r.filter(skill => s.includes(skill));
+  const score = Math.round((matched.length / r.length) * 100);
+  return { score, matched };
+}
+
 function renderJobList(jobs) {
   const listElement = document.getElementById("jobList");
   if (!listElement) return;
@@ -35,15 +46,22 @@ function renderJobList(jobs) {
 
   const role = localStorage.getItem("userRole") || "student";
   const studentCgpa = studentProfile ? (studentProfile.cgpa || 0) : 0;
+  const studentSkills = studentProfile ? (studentProfile.skills || []) : [];
   const canManage = (role === "admin" || role === "company");
 
   listElement.innerHTML = jobs
     .map(job => {
-      const skills = Array.isArray(job.skills) ? job.skills.join(", ") : job.skills;
+      const skills = Array.isArray(job.skills) ? job.skills.join(", ") : (job.skills || "");
       const minCgpa = job.minCgpa || 0;
 
       let eligibilityBadge = "";
       let actionButtons = "";
+      let matchBadge = "";
+      let statusBadge = "";
+
+      // Find application status
+      const app = studentApplications.find(a => a.jobId === job._id);
+      const appStatus = app ? app.status : "Not Applied";
 
       if (role === "student") {
         const isEligible = studentCgpa >= minCgpa;
@@ -51,9 +69,31 @@ function renderJobList(jobs) {
           ? `<span class="badge badge-placed" style="margin-left: 10px; font-size: 0.8rem; display: inline-block;">Eligible</span>`
           : `<span class="badge badge-rejected" style="margin-left: 10px; font-size: 0.8rem; display: inline-block;">Ineligible (Requires ${minCgpa} CGPA)</span>`;
 
-        actionButtons = isEligible
-          ? `<button class="btn btn-apply" onclick="applyForJob('${job._id}', '${job.title.replace(/'/g, "\\'")}')" style="margin-top: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">Apply Now</button>`
-          : `<button class="btn btn-apply" disabled style="margin-top: 15px; background: #4b5563; box-shadow: none; cursor: not-allowed; opacity: 0.6;">Apply Now</button>`;
+        // Match Score calculation (Slide 9)
+        const match = matchJob(studentSkills, job.skills || []);
+        if (match.score > 0) {
+          matchBadge = `<span class="badge" style="margin-left: 10px; font-size: 0.8rem; display: inline-block; background: rgba(16, 185, 129, 0.15); color: #10b981;">${match.score}% Match (${match.matched.join(", ")})</span>`;
+        } else {
+          matchBadge = `<span class="badge" style="margin-left: 10px; font-size: 0.8rem; display: inline-block; background: rgba(255, 255, 255, 0.05); color: #9ca3af;">0% Match</span>`;
+        }
+
+        // Application status badge
+        if (appStatus !== "Not Applied") {
+          let badgeClass = "badge-applied";
+          if (appStatus === "Shortlisted") badgeClass = "badge-shortlisted";
+          else if (appStatus === "Selected" || appStatus === "Placed") badgeClass = "badge-placed";
+          else if (appStatus === "Rejected") badgeClass = "badge-rejected";
+
+          statusBadge = `<span class="badge ${badgeClass}" style="margin-left: 10px; font-size: 0.8rem; display: inline-block;">${appStatus}</span>`;
+        }
+
+        if (appStatus === "Not Applied") {
+          actionButtons = isEligible
+            ? `<button class="btn btn-apply" onclick="applyForJob('${job._id}', '${job.title.replace(/'/g, "\\'")}')" style="margin-top: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">Apply Now</button>`
+            : `<button class="btn btn-apply" disabled style="margin-top: 15px; background: #4b5563; box-shadow: none; cursor: not-allowed; opacity: 0.6;">Apply Now</button>`;
+        } else {
+          actionButtons = `<button class="btn btn-apply" disabled style="margin-top: 15px; background: rgba(255, 255, 255, 0.05); color: #9ca3af; box-shadow: none; cursor: not-allowed; border: 1px solid rgba(255,255,255,0.1);">Already Applied</button>`;
+        }
       } else if (canManage) {
         actionButtons = `
           <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -67,40 +107,63 @@ function renderJobList(jobs) {
         <div class="card">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
             <div>
-              <h4 style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${job.title} ${eligibilityBadge}</h4>
+              <h4 style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                ${job.title} 
+                ${statusBadge}
+                ${eligibilityBadge} 
+                ${matchBadge}
+              </h4>
               <p><strong>Company:</strong> ${job.companyName || "N/A"}</p>
               <p><strong>Location:</strong> ${job.location || "N/A"}</p>
-              <p><strong>Salary:</strong> ${job.salary || job.package || "N/A"}</p>
+              <p><strong>Salary/Package:</strong> ${job.salary || job.package || "N/A"}</p>
               <p><strong>Skills:</strong> ${skills || "N/A"}</p>
               <p style="color: #a78bfa;"><strong>Eligibility (Min CGPA):</strong> ${minCgpa || "None"}</p>
               <p><strong>Deadline:</strong> ${job.deadline ? new Date(job.deadline).toLocaleDateString() : "N/A"}</p>
             </div>
             ${actionButtons}
           </div>
-          <p>${job.description || "No description provided."}</p>
+          <p style="margin-top: 10px; white-space: pre-line;">${job.description || "No description provided."}</p>
         </div>
       `;
     })
     .join("");
 }
 
-async function getJobs() {
-  const title = document.getElementById("searchTitle")?.value || "";
-  const company = document.getElementById("searchCompany")?.value || "";
-  const location = document.getElementById("searchLocation")?.value || "";
-
-  const queryParams = new URLSearchParams();
-  if (title) queryParams.append("search", title);
-  if (company) queryParams.append("company", company);
-  if (location) queryParams.append("location", location);
+async function fetchStudentApplications() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
   try {
-    const response = await fetch(`${API_URL}?${queryParams.toString()}`);
+    const response = await fetch(APP_URL, {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+    if (response.ok) {
+      studentApplications = await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to load student applications:", error);
+  }
+}
+
+async function getJobs() {
+  try {
+    const role = localStorage.getItem("userRole") || "student";
+    const response = await fetch(API_URL);
     if (!response.ok) {
       throw new Error("Failed to load jobs");
     }
-    const jobs = await response.json();
-    renderJobList(jobs);
+    allJobs = await response.json();
+
+    if (role === "student") {
+      await Promise.all([
+        fetchStudentProfile(),
+        fetchStudentApplications()
+      ]);
+    }
+
+    filterJobs();
   } catch (error) {
     console.error(error);
     const listElement = document.getElementById("jobList");
@@ -108,6 +171,117 @@ async function getJobs() {
       listElement.innerHTML = "<p>Unable to load jobs.</p>";
     }
   }
+}
+
+function filterJobs() {
+  const universalQuery = document.getElementById("searchUniversal")?.value.toLowerCase() || "";
+  const locationQuery = document.getElementById("searchLocation")?.value.toLowerCase() || "";
+  const skillsQuery = document.getElementById("searchSkills")?.value.toLowerCase() || "";
+  const minPackageQuery = parseFloat(document.getElementById("searchMinPackage")?.value) || 0;
+  const deadlineQuery = document.getElementById("searchDeadline")?.value || "all";
+  const sortBy = document.getElementById("sortJobsBy")?.value || "newest";
+
+  const role = localStorage.getItem("userRole") || "student";
+  const studentSkills = studentProfile ? (studentProfile.skills || []) : [];
+
+  let filtered = allJobs.filter(job => {
+    // Determine application status
+    const app = studentApplications.find(a => a.jobId === job._id);
+    const appStatus = app ? app.status : "Not Applied";
+
+    // 1. Universal Search (Title, Company, Skills, Status)
+    let universalMatch = true;
+    if (universalQuery) {
+      const titleLower = (job.title || "").toLowerCase();
+      const companyLower = (job.companyName || "").toLowerCase();
+      const statusLower = appStatus.toLowerCase();
+      const skillsLower = Array.isArray(job.skills) 
+        ? job.skills.map(s => s.toLowerCase()) 
+        : (job.skills ? job.skills.toLowerCase().split(",").map(s => s.trim()) : []);
+
+      const matchesTitle = titleLower.includes(universalQuery);
+      const matchesCompany = companyLower.includes(universalQuery);
+      const matchesStatus = statusLower.includes(universalQuery);
+      const matchesSkills = skillsLower.some(s => s.includes(universalQuery));
+
+      universalMatch = matchesTitle || matchesCompany || matchesStatus || matchesSkills;
+    }
+
+    // 2. Location filter
+    const locationMatch = !locationQuery || (job.location && job.location.toLowerCase().includes(locationQuery));
+
+    // 3. Required Skill filter
+    let skillsMatch = true;
+    if (skillsQuery) {
+      const jobSkills = Array.isArray(job.skills)
+        ? job.skills.map(s => s.toLowerCase())
+        : (job.skills ? job.skills.toLowerCase().split(",").map(s => s.trim()) : []);
+      
+      skillsMatch = jobSkills.some(s => s.includes(skillsQuery));
+    }
+
+    // 4. Minimum Package filter
+    let packageMatch = true;
+    if (minPackageQuery > 0) {
+      const jobPkgVal = parsePackage(job.salary || job.package);
+      packageMatch = jobPkgVal >= minPackageQuery;
+    }
+
+    // 5. Deadline filter
+    let deadlineMatch = true;
+    if (deadlineQuery === "active" && job.deadline) {
+      const deadlineDate = new Date(job.deadline);
+      deadlineDate.setHours(23, 59, 59, 999);
+      deadlineMatch = deadlineDate >= new Date();
+    }
+
+    return universalMatch && locationMatch && skillsMatch && packageMatch && deadlineMatch;
+  });
+
+  // Helper parser for packages
+  function parsePackage(pkgStr) {
+    if (!pkgStr) return 0;
+    const cleanStr = pkgStr.toString().replace(/,/g, "");
+    const matches = cleanStr.match(/(\d+(?:\.\d+)?)/);
+    if (!matches) return 0;
+    let val = parseFloat(matches[1]);
+    if (val >= 10000) {
+      val = val / 100000;
+    }
+    return val;
+  }
+
+  // Calculate Match Score Helper
+  function getMatchScore(job) {
+    if (role !== "student") return 0;
+    const s = studentSkills.map(x => x.toLowerCase().trim()).filter(Boolean);
+    const r = (job.skills || []).map(x => x.toLowerCase().trim()).filter(Boolean);
+    if (r.length === 0) return 100;
+    const matched = r.filter(skill => s.includes(skill));
+    return Math.round((matched.length / r.length) * 100);
+  }
+
+  // 6. Sorting
+  if (sortBy === "newest") {
+    filtered.sort((a, b) => b._id.localeCompare(a._id));
+  } else if (sortBy === "package") {
+    filtered.sort((a, b) => parsePackage(b.salary || b.package) - parsePackage(a.salary || a.package));
+  } else if (sortBy === "relevance") {
+    filtered.sort((a, b) => getMatchScore(b) - getMatchScore(a));
+  } else if (sortBy === "status") {
+    const priority = { "Selected": 4, "Placed": 4, "Shortlisted": 3, "Interview": 3, "Applied": 2, "Not Applied": 1, "Rejected": 0 };
+    filtered.sort((a, b) => {
+      const appA = studentApplications.find(x => x.jobId === a._id);
+      const appB = studentApplications.find(x => x.jobId === b._id);
+      const statusA = appA ? appA.status : "Not Applied";
+      const statusB = appB ? appB.status : "Not Applied";
+      const valA = priority[statusA] !== undefined ? priority[statusA] : 0;
+      const valB = priority[statusB] !== undefined ? priority[statusB] : 0;
+      return valB - valA;
+    });
+  }
+
+  renderJobList(filtered);
 }
 
 async function handleJobSubmit(event) {
@@ -306,6 +480,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (role === "student") {
       await fetchStudentProfile();
     }
+    
+    // Bind dynamic input smart search listeners
+    const universalSearch = document.getElementById("searchUniversal");
+    const locationSearch = document.getElementById("searchLocation");
+    const skillsSearch = document.getElementById("searchSkills");
+    const minPackageSearch = document.getElementById("searchMinPackage");
+    const deadlineSearch = document.getElementById("searchDeadline");
+    const sortJobsBy = document.getElementById("sortJobsBy");
+
+    if (universalSearch) universalSearch.addEventListener("input", filterJobs);
+    if (locationSearch) locationSearch.addEventListener("input", filterJobs);
+    if (skillsSearch) skillsSearch.addEventListener("input", filterJobs);
+    if (minPackageSearch) minPackageSearch.addEventListener("input", filterJobs);
+    if (deadlineSearch) deadlineSearch.addEventListener("change", filterJobs);
+    if (sortJobsBy) sortJobsBy.addEventListener("change", filterJobs);
+
     getJobs();
   }
 });

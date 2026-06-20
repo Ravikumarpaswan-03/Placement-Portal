@@ -2,11 +2,9 @@
 <html>
 
 <head>
-
 <title>Student Dashboard</title>
-
 <link rel="stylesheet" href="../css/style.css">
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -29,6 +27,15 @@
   <p id="userEmail"></p>
 </div>
 
+<!-- Recommended Job Matches Panel -->
+<div class="card" id="jobRecommendationsCard" style="display: none;">
+  <h2>Recommended Job Matches</h2>
+  <p style="margin-bottom: 15px; font-size: 0.85rem; color: #9ca3af;">Personalized matches based on your skills compared with active job postings (Slide 9 Job Matching Logic).</p>
+  <div id="recommendationsList" class="recommendations-list">
+    <!-- Recommendations will be populated here -->
+  </div>
+</div>
+
 <div class="card">
   <h2>My Application Stats</h2>
   <div class="stats-grid">
@@ -44,6 +51,10 @@
       <h3>Selected</h3>
       <p id="selectedCount">0</p>
     </div>
+  </div>
+  
+  <div class="chart-container">
+    <canvas id="analyticsChart" style="max-height: 250px;"></canvas>
   </div>
 </div>
 
@@ -64,9 +75,11 @@
 
 </div>
 
+
 <script src="../js/config.js"></script>
 <script src="../js/student-dashboard.js"></script>
 
 </body>
 
 </html>
+

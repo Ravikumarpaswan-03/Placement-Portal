@@ -2,11 +2,9 @@
 <html>
 
 <head>
-
 <title>Admin Dashboard</title>
-
 <link rel="stylesheet" href="../css/style.css">
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -59,6 +57,20 @@
   </div>
 </div>
 
+<div class="card">
+  <h2>Analytical Insights</h2>
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <div class="chart-container">
+      <h3 style="margin-bottom: 10px;">Application Pipeline Status Distribution</h3>
+      <canvas id="analyticsChart" style="max-height: 250px;"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3 style="margin-bottom: 10px;">Top Student Skills Distribution</h3>
+      <canvas id="skillsChart" style="max-height: 250px;"></canvas>
+    </div>
+  </div>
+</div>
+
 <!-- Add New Administrator Form -->
 <div class="card">
   <h3>Add New Administrator</h3>
@@ -79,6 +91,7 @@
   <h3>Reset User Password</h3>
   <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">Manually reset the password for any student, company, or mentor account.</p>
   <form id="resetUserPasswordForm" autocomplete="off">
+    <input type="hidden" id="resetUserId">
     <input id="resetUserEmail" type="email" placeholder="User Email Address" required autocomplete="off">
     <div class="password-container">
       <input id="resetUserPassword" type="password" placeholder="New Password" required autocomplete="new-password">
@@ -179,10 +192,10 @@
 </div>
 
 </div>
-
 <script src="../js/config.js"></script>
 <script src="../js/admin-dashboard.js"></script>
 
 </body>
 
 </html>
+
