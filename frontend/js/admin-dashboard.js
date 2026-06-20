@@ -490,7 +490,45 @@ function loadSelfAccountSettings() {
   const selfNameInput = document.getElementById("adminSelfName");
   const selfEmailInput = document.getElementById("adminSelfEmail");
   if (selfNameInput) selfNameInput.value = localStorage.getItem("userName") || "";
-  if (selfEmailInput) selfEmailInput.value = localStorage.getItem("userEmail") || "";
+  const userEmail = localStorage.getItem("userEmail") || "";
+  if (selfEmailInput) selfEmailInput.value = userEmail;
+
+  // Show self-delete button only if not Master Admin
+  const deleteBtn = document.getElementById("adminDeleteAccountBtn");
+  if (deleteBtn) {
+    if (userEmail === "ravikumarofficial8459@gmail.com") {
+      deleteBtn.style.display = "none";
+    } else {
+      deleteBtn.style.display = "block";
+    }
+  }
+}
+
+async function deleteSelfAccount() {
+  if (!confirm("Are you sure you want to permanently delete your administrator account? This action cannot be undone and will delete all your records.")) {
+    return;
+  }
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/delete-account`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (response.ok) {
+      alert("Your administrator account has been successfully deleted.");
+      localStorage.clear();
+      window.location.href = "../index.html";
+    } else {
+      const data = await response.json();
+      alert(data.message || "Failed to delete account.");
+    }
+  } catch (error) {
+    console.error("Delete self error:", error);
+    alert("Error occurred while deleting your account.");
+  }
 }
 
 async function handleAdminAccountSettingsSubmit(event) {
@@ -533,6 +571,7 @@ window.cancelEditCredentials = cancelEditCredentials;
 window.deleteUserAccount = deleteUserAccount;
 window.openResetPassword = openResetPassword;
 window.toggleAccountSettings = toggleAccountSettings;
+window.deleteSelfAccount = deleteSelfAccount;
 window.togglePasswordVisibility = togglePasswordVisibility;
 
 document.addEventListener("DOMContentLoaded", () => {

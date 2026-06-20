@@ -15,7 +15,8 @@ const {
   adminGetUsers,
   adminDeleteUser,
   adminGetLoginAttempts,
-  adminUpdateUserAccount
+  adminUpdateUserAccount,
+  deleteSelfAccount
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -33,5 +34,6 @@ router.get("/admin/users", authMiddleware, adminGetUsers);
 router.delete("/admin/users/:id", authMiddleware, adminDeleteUser);
 router.get("/admin/login-attempts", authMiddleware, adminGetLoginAttempts);
 router.put("/admin/update-user-account", authMiddleware, adminUpdateUserAccount);
+router.delete("/delete-account", authMiddleware, deleteSelfAccount);
 
 module.exports = router;

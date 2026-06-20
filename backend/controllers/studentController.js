@@ -91,6 +91,11 @@ exports.deleteStudent = async (req, res) => {
     if (student.userId) {
       await User.findByIdAndDelete(student.userId);
     }
+
+    // Clean up applications
+    const Application = require("../models/Application");
+    await Application.deleteMany({ studentId: req.params.id });
+
     res.json({ message: "Student deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });

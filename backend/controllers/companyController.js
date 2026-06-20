@@ -152,7 +152,31 @@ exports.deleteCompany = async (req, res) => {
       return res.status(403).json({ message: "Access denied. You can only delete your own company profile." });
     }
 
-    await Company.findByIdAndDelete(req.params.id);
+    const User = require("../models/User");
+    const Job = require("../models/Job");
+    const Application = require("../models/Application");
+
+    const companyIdStr = req.params.id;
+
+    // Find jobs of this company
+    const jobs = await Job.find({ companyId: companyIdStr });
+    const jobIds = jobs.map(j => j._id.toString());
+
+    // Delete applications for those jobs
+    if (jobIds.length > 0) {
+      await Application.deleteMany({ jobId: { $in: jobIds } });
+    }
+
+    // Delete company jobs
+    await Job.deleteMany({ companyId: companyIdStr });
+
+    // Delete company profile
+    await Company.findByIdAndDelete(companyIdStr);
+
+    // Delete associated login user account
+    if (companyToDelete.userId) {
+      await User.findByIdAndDelete(companyToDelete.userId);
+    }
 
     res.json({
       message: "Company deleted successfully"

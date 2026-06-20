@@ -120,7 +120,10 @@
         <input id="mentorSelfPassword" type="password" placeholder="Confirm/Update My Password" required autocomplete="new-password">
         <span class="password-toggle" onclick="togglePasswordVisibility('mentorSelfPassword', this)">Show</span>
       </div>
-      <button type="submit" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">Update My Account</button>
+      <div style="display: flex; gap: 15px; margin-top: 15px;">
+        <button type="submit" style="flex: 1; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">Update My Account</button>
+        <button id="mentorDeleteAccountBtn" type="button" onclick="deleteSelfAccount()" style="flex: 1; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);">Delete Account</button>
+      </div>
     </form>
   </div>
 

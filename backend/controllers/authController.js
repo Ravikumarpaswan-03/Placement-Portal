@@ -632,6 +632,56 @@ exports.adminGetUsers = async (req, res) => {
   }
 };
 
+exports.deleteSelfAccount = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Guard: Prevent deleting the Master Admin account
+    if (user.email === "ravikumarofficial8459@gmail.com") {
+      return res.status(403).json({ message: "Access denied. The Master Administrator account cannot be deleted." });
+    }
+
+    // Cascade deletions based on role
+    if (user.role === "student") {
+      const Student = require("../models/Student");
+      const Application = require("../models/Application");
+      
+      const student = await Student.findOne({ userId });
+      if (student) {
+        await Application.deleteMany({ studentId: student._id.toString() });
+        await Student.findByIdAndDelete(student._id);
+      }
+    } else if (user.role === "company") {
+      const Company = require("../models/Company");
+      const Job = require("../models/Job");
+      const Application = require("../models/Application");
+
+      const company = await Company.findOne({ userId });
+      if (company) {
+        const companyIdStr = company._id.toString();
+        const jobs = await Job.find({ companyId: companyIdStr });
+        const jobIds = jobs.map(j => j._id.toString());
+        if (jobIds.length > 0) {
+          await Application.deleteMany({ jobId: { $in: jobIds } });
+          await Job.deleteMany({ companyId: companyIdStr });
+        }
+        await Company.findByIdAndDelete(company._id);
+      }
+    }
+
+    // Finally, delete the User document itself
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: "Your account has been deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.adminDeleteUser = async (req, res) => {
   try {
     const requester = await User.findById(req.user.id);
@@ -661,13 +711,30 @@ exports.adminDeleteUser = async (req, res) => {
 
     await User.findByIdAndDelete(targetUser._id);
 
-    // Delete associated profiles
+    // Delete associated profiles & related entities
     if (targetUser.role === "student") {
       const Student = require("../models/Student");
-      await Student.deleteOne({ userId: targetUser._id });
+      const Application = require("../models/Application");
+      const student = await Student.findOne({ userId: targetUser._id });
+      if (student) {
+        await Application.deleteMany({ studentId: student._id.toString() });
+        await Student.findByIdAndDelete(student._id);
+      }
     } else if (targetUser.role === "company") {
       const Company = require("../models/Company");
-      await Company.deleteOne({ userId: targetUser._id });
+      const Job = require("../models/Job");
+      const Application = require("../models/Application");
+      const company = await Company.findOne({ userId: targetUser._id });
+      if (company) {
+        const companyIdStr = company._id.toString();
+        const jobs = await Job.find({ companyId: companyIdStr });
+        const jobIds = jobs.map(j => j._id.toString());
+        if (jobIds.length > 0) {
+          await Application.deleteMany({ jobId: { $in: jobIds } });
+          await Job.deleteMany({ companyId: companyIdStr });
+        }
+        await Company.findByIdAndDelete(company._id);
+      }
     }
 
     res.json({ message: "User account deleted successfully." });

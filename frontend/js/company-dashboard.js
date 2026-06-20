@@ -114,6 +114,34 @@ async function loadDashboard() {
 // Expose togglePasswordVisibility and toggleAccountSettings to window
 window.togglePasswordVisibility = togglePasswordVisibility;
 window.toggleAccountSettings = toggleAccountSettings;
+window.deleteSelfAccount = deleteSelfAccount;
+
+async function deleteSelfAccount() {
+  if (!confirm("Are you sure you want to permanently delete your company recruiter account? This action cannot be undone and will delete all your records, job postings, and applications.")) {
+    return;
+  }
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${BASE_URL}/api/auth/delete-account`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (response.ok) {
+      alert("Your recruiter account has been successfully deleted.");
+      localStorage.clear();
+      window.location.href = "../index.html";
+    } else {
+      const data = await response.json();
+      alert(data.message || "Failed to delete account.");
+    }
+  } catch (error) {
+    console.error("Delete self error:", error);
+    alert("Error occurred while deleting your account.");
+  }
+}
 
 function toggleAccountSettings() {
   const card = document.getElementById("accountSettingsCard");
@@ -137,6 +165,7 @@ function togglePasswordVisibility(inputId, toggleEl) {
     toggleEl.textContent = "Show";
   }
 }
+
 
 function loadSelfAccountSettings() {
   const selfNameInput = document.getElementById("companySelfName");
