@@ -1,0 +1,269 @@
+================================================================================
+                    PLACEMENT CELL PORTAL & PROGRESS TRACKER
+                         FULL CAPSTONE PROJECT REPORT
+                     DEVELOPED BY: RAVIKUMAR PASWAN
+                       M.SC. COMPUTER SCIENCE
+================================================================================
+
+--------------------------------------------------------------------------------
+1. TITLE PAGE, CERTIFICATE, ACKNOWLEDGEMENT & ABSTRACT
+--------------------------------------------------------------------------------
+
+TITLE PAGE
+- Project Title: Placement Cell Portal & OJT Progress Tracker
+- Course: M.Sc. Computer Science Capstone Project
+- Student Developer: Ravikumar Paswan
+- Development Stack: Node.js, Express.js, MongoDB (Mongoose), HTML5, CSS3, and ES6 JavaScript
+
+CERTIFICATE OF COMPLETION
+This is to certify that Ravikumar Paswan has successfully designed, programmed, 
+and verified this Capstone project containing the Week 1 client-side progress 
+tracker and the Week 2, 3, and 4 full-stack recruitment portal. The application 
+meets all parameters, including custom CSS styling, role-based dashboards, login 
+audits, advanced filtering, and skills-based job recommendation scoring.
+
+ACKNOWLEDGEMENT
+I want to express my gratitude to my college mentors, trainers, and classmates 
+who supported me during this project. Their advice helped me build better user 
+interfaces, solve backend port conflicts, and implement recommendation checks. 
+I also thank the open-source community for providing Node.js, Express, and MongoDB.
+
+ABSTRACT
+The Placement Cell Portal is a web application built to digitize, organize, and 
+accelerate student recruitment and On-Job Training (OJT) tracking. Initially starting 
+as a simple client-side progress manager (Week 1), the platform evolved into a 
+full-stack application (Weeks 2-4) connecting Students, Companies, Mentors, and 
+Administrators. 
+
+The system features:
+- Secure role-based logins with multi-account support (up to 3 accounts per email).
+- Centralized directories to manage students, recruiter companies, job listings, 
+  and application status tracking.
+- Automated CGPA qualification checks.
+- A rule-based job matching recommendation engine calculating overlap percentages 
+  between student skills and company requirements.
+- Real-time analytics dashboards utilizing Chart.js charts.
+- Hashed passwords and secure session handling.
+
+
+--------------------------------------------------------------------------------
+2. PROBLEM STATEMENT, OBJECTIVES & SCOPE
+--------------------------------------------------------------------------------
+
+PROBLEM STATEMENT
+Traditional student placement cells and internship tracking suffer from several 
+operational problems:
+- Manual Task Logs: Students log daily training activities on paper or static files, 
+  making it hard for mentors to review progress.
+- Disconnected Directories: Recruiter companies, student resumes, and job listings 
+  are managed in disparate spreadsheets, leading to out-of-date records.
+- Slow Cutoff Verification: Placement officers must manually verify if a student's 
+  CGPA meets a company's required threshold before allowing them to apply.
+- Blind Applications: Students apply for jobs without knowing if their technical 
+  skills match the job description, resulting in low conversion rates.
+
+OBJECTIVES
+1. Centralize Recruitment & Training: Establish one shared system for students, 
+   companies, mentors, and administrators.
+2. Automate Logs & Tasks: Build interactive task management tools for daily 
+   progress monitoring.
+3. Automate Eligibility Verification: Let the system check CGPA thresholds 
+   instantly.
+4. Calculate Skill Matches: Implement a matching score showing the percentage 
+   overlap between student skills and job requirements.
+5. Provide Live Charts: Display progress and hiring status distributions.
+6. Enforce Security: Hash passwords and track login attempts to avoid security 
+   breaches.
+
+SCOPE
+- Four role-based dashboards (Student, Recruiter, Mentor, Admin).
+- Client-side progress tracking and local task storage.
+- Multi-part PDF resume upload support.
+- API endpoints for complete directories CRUD (Create, Read, Update, Delete) 
+  operations.
+- Smart filters (by skills, location, min package, deadline status) and custom sorting.
+
+
+--------------------------------------------------------------------------------
+3. WEEK 1 IMPLEMENTATION: OJT PROGRESS TRACKER
+--------------------------------------------------------------------------------
+
+In Week 1, the foundation was laid by building the client-side "OJT Progress 
+Tracker". This app helped students track their daily On-Job Training activities 
+prior to the full-stack database integration.
+
+CORE CAPABILITIES & CODE ARCHITECTURE
+- HTML & CSS Structure: Designed a responsive layout featuring simple layout 
+  sections for task creation, notes keeping, and progress summaries.
+- Task CRUD Actions: Students can add daily OJT tasks, edit descriptions, toggle 
+  progress status (Pending, In Progress, Completed), and delete outdated items.
+- Notes Management: A dedicated note-taking section let users document key learning 
+  points, feedback, and technical obstacles.
+- Progress Calculation: The interface dynamically calculates the student's task 
+  completion rate (e.g., if 4 out of 5 tasks are completed, it shows an 80% 
+  completion bar).
+
+DATA PERSISTENCE & LOCAL STORAGE
+To persist data without a database connection in the initial version, we used the 
+browser's LocalStorage API.
+- Saving Data: Every time a task is added, edited, or deleted, the updated task 
+  array is serialized and stored:
+  `localStorage.setItem("tasks", JSON.stringify(tasks));`
+- Loading Data: Upon opening or refreshing the page, JavaScript fetches and parses 
+  the stored string:
+  `const tasks = JSON.parse(localStorage.getItem("tasks")) || [];`
+This ensured student logs remained safe across browser refreshes.
+
+
+--------------------------------------------------------------------------------
+4. WEEK 2 IMPLEMENTATION: AUTHENTICATION, SECURITY & EMAIL FLOWS
+--------------------------------------------------------------------------------
+
+In Week 2, the app transitioned from a local client tool to a secure, server-driven 
+application with role-based logins.
+
+SECURE MULTI-ACCOUNT LOGIN LOGIC
+- Up to 3 Accounts per Email: To support users with multiple responsibilities, 
+  we allowed an email (e.g., a mentor who also recruits for a company) to have 
+  up to 3 separate logins, provided the roles are different.
+- Password Difference Guard: To avoid login conflicts, the server checks existing 
+  accounts with that email. It prevents the user from registering a new role with 
+  the same password as another account on that email.
+
+DEEP EMAIL VALIDATION & BYPASS
+- Real-world validation: We built a validation utility checking email formats, 
+  disposable email lists, and checking if the email domain has active MX records.
+- Developer bypass: For testing convenience, we bypassed the active OTP flow. 
+  Registered accounts are verified by default (`isVerified: true`), keeping the 
+  underlying OTP logic intact.
+- SMTP / Resend API configuration: We configured SMTP parameters for mail deliveries. 
+  We set up fallback rules using the Resend API to handle connection blocks 
+  on hosting platforms like Render.
+
+
+--------------------------------------------------------------------------------
+5. WEEK 3 IMPLEMENTATION: ROLE-BASED DASHBOARDS & DIRECTORIES CRUD
+--------------------------------------------------------------------------------
+
+In Week 3, the database integration was completed, adding dashboards, full CRUD 
+management, and auditing controls.
+
+FOUR DISTINCT PORTALS
+- Student Dashboard: Manage profiles, upload resumes, see job recommendations, 
+  and check application statuses.
+- Company Recruiter Dashboard: Register company profiles, create/manage job listings, 
+  and track applicant pipelines.
+- Mentor Dashboard: Read-only access to directories to review student readiness 
+  and recruitment stats.
+- Admin Dashboard: Complete system control, directories management, audit monitoring, 
+  and credential edits.
+
+LOGIN AUDITING & ADMINISTRATIVE CONTROLS
+- Login Attempt Logging: Every login event logs the target email, IP address, 
+  timestamp, and outcome (Success/Failure) in the database, protecting accounts 
+  from brute-force intrusion.
+- Master Admin Safeguards: The primary admin (`ravikumarofficial8459@gmail.com`) 
+  can delegate administrator privileges. We blocked other junior accounts from 
+  modifying or deleting the primary admin record to prevent lockouts.
+- Password Recovery Action: Admin password resets set the user's password to 
+  match their login email.
+
+DIRECTORIES CRUD MANAGEMENT
+- Students, Companies, Jobs, and Application tables are mapped in MongoDB using 
+  Mongoose.
+- Recruiters can add, edit, and delete jobs. Admins can manage all records, 
+  bridging data across all modules.
+
+
+--------------------------------------------------------------------------------
+6. WEEK 4 IMPLEMENTATION: ANALYTICS, FILTERING & RECOMMENDATIONS
+--------------------------------------------------------------------------------
+
+In Week 4, the application was enhanced with visualizations, advanced search 
+utilities, and skill recommendations.
+
+LIVE CHARTS & PIXEL-PERFECT VISUALS
+- Chart.js Integration: Connected the Chart.js library to render Doughnut charts 
+  of hiring pipelines (Applied, Shortlisted, Selected, Rejected).
+- Glassmorphic Styling: Re-engineered layout CSS using responsive CSS Grid, 
+  backdrop blur, HSL colors, and dark-mode gradients.
+
+ADVANCED SEARCH, FILTERING, AND SORTING (SLIDE 8)
+- Universal Search Bar: Matches input string against Job Title, Company Name, 
+  Skills, or Application Status.
+- Multi-Axis Filters: Filter jobs by Location, Required Skill, Minimum Package 
+  (LPA), and Deadline Status (Active only vs. All).
+- Real-Time Sorting: Sort jobs by Newest First, Highest Package (parsed numerically 
+  from salary text), Most Relevant (skills match score), and Status Priority.
+
+SKILL-OVERLAP RECOMMENDATION ENGINE (SLIDE 9)
+- Skills Matching: Converts student and job skills into lowercase, trimmed string 
+  arrays.
+  Match Score = (CommonSkills / JobSkills) * 100
+- Recommended Job Matches Panel: Student dashboards display the top 3 job matches 
+  with highlighted skills, match scores, and CGPA eligibility badges.
+
+RESUME MANAGEMENT OPTIONS
+- PDF Uploads: Configured Multer middleware to handle local file storage.
+- External Links: Support pasting Google Drive or Dropbox links.
+
+
+--------------------------------------------------------------------------------
+7. SYSTEM ARCHITECTURE & DATABASE DESIGN
+--------------------------------------------------------------------------------
+
+DATA RELATIONSHIPS
+- Users map to Student profiles via `userId` bindings.
+- Applications map students to job listings using `studentId` and `jobId` parameters.
+- Audit trails record security events independently.
+
+DATABASE VALIDATION MIDDLEWARE
+To prevent database crashes, all routes containing an `:id` parameter (like updating 
+a job or deleting a student) pass through `validateIdMiddleware.js`. It validates 
+the ID length and format, immediately returning a `400 Bad Request` if invalid.
+
+
+--------------------------------------------------------------------------------
+8. KEY DEVELOPMENT CHALLENGES & SOLUTIONS
+--------------------------------------------------------------------------------
+
+CHALLENGE 1: LOCAL PORT CONFLICTS & CORS RESTRICTIONS
+- The Issue: The backend server ran on `localhost:5000` while the frontend was 
+  served on `127.0.0.1:5500`. The browser blocked fetch requests due to CORS 
+  protection blocks.
+- The Solution: Configured the backend `cors` library to explicitly allow requests 
+  from port 5500, setting headers to carry authorization headers.
+
+CHALLENGE 2: SKILLS OVERLAP AND CASE MISMATH
+- The Issue: Matching failed when jobs requested "React" and students listed 
+  "react" or added trailing spaces.
+- The Solution: Normalized strings by mapping arrays to lowercase, trimming 
+  whitespaces, and removing empty values before comparing.
+
+CHALLENGE 3: OVERLAPPING LAYOUT ELEMENTS
+- The Issue: Absolute positioning in custom transparent CSS cards caused layout 
+  clipping on smaller mobile screens.
+- The Solution: Reworked the layout using Flexbox and CSS Grid, and adjusted 
+  `z-index` properties to keep text readable.
+
+CHALLENGE 4: MONGO UNIQUE INDEX CONFLICTS
+- The Issue: Cached unique constraints caused index errors during schema updates.
+- The Solution: Wrote database clean-up scripts to drop obsolete unique indexes 
+  (like duplicate email keys) from student collections.
+
+
+--------------------------------------------------------------------------------
+9. LEARNING OUTCOMES & FUTURE SCOPE
+--------------------------------------------------------------------------------
+
+LEARNING OUTCOMES
+- Vanilla JavaScript patterns for dynamic updates without bundlers.
+- Building state management using local storage and JWT sessions.
+- Secure password hashing (Bcrypt) and role separations.
+- Designing responsive, accessible dark layouts.
+
+FUTURE SCOPE
+- Notification Engine: Send automated emails to students upon status changes.
+- Resume Parser: Auto-suggest student profile skills by parsing PDF resumes.
+- Calendar Sync: Allow recruiters to book interview slots directly through the app.
+================================================================================

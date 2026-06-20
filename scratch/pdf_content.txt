@@ -1,0 +1,404 @@
+
+
+Week 4
+AI-Enhanced Capstone, Portfolio and Job 
+Readiness
+Make the product intelligent, presentable and interview-ready
+For M.Sc. Computer Science Students | 30 Hours
+
+Week 4
+AI, Analytics, Capstone and Job Readiness
+Agenda
+This session sequence is designed for teaching and live coding.
+1
+Choose AI or analytics enhancement
+2
+Design dashboard, search or recommendation feature
+3
+Implement data-driven improvement
+4
+Use AI responsibly in development
+5
+Finalize testing and documentation
+6
+Prepare GitHub portfolio and resume points
+7
+Practice presentation and viva
+8
+Submit final capstone package
+Project-Based OJT Teaching Deck
+2
+
+Week 4
+Learning Outcomes
+What you will learn after completing this week
+By the end of this week, students should be able to:
+✓
+Add one useful AI or analytics feature
+✓
+Build charts or dashboards from project data
+✓
+Implement search, filters or recommendation logic
+✓
+Use AI tools responsibly for coding and documentation
+✓
+Prepare complete project report
+✓
+Create portfolio-ready GitHub repository
+✓
+Write resume points from project work
+✓
+Present project architecture clearly
+✓
+Answer viva and interview questions
+✓
+Plan future enhancements
+Project-Based OJT Teaching Deck
+3
+
+Week 4
+Goal of the Week: Product to Portfolio
+Goal of the Week: Product to Portfolio
+Students turn their project into proof of job readiness.
+•
+Add one feature that makes the app smarter or more useful.
+•
+Clean UI, fix critical bugs and confirm deployed application works.
+•
+Complete documentation: report, README, screenshots and user manual.
+•
+Prepare demo flow and presentation story.
+•
+Convert project experience into resume and interview talking points.
+•
+Submit final capstone with all weekly evidence.
+Instructor cue: The final output should look like something students can show in interviews.
+Project-Based OJT Teaching Deck
+4
+
+Week 4
+AI/Data Feature Options
+AI/Data Feature Options
+Analytics Dashboard
+Charts for applications, status, companies and student skills.
+Smart Search
+Search students/jobs by skills, role, company or status.
+Recommendation
+Match jobs to students based on skills and eligibility.
+Chatbot
+FAQ assistant for placement process or app help.
+Resume Review
+Keyword extraction or checklist-based resume feedback.
+Report Generator
+Auto-generate weekly or final reports from project data.
+Project-Based OJT Teaching Deck
+5
+
+Week 4
+Analytics Dashboard Design
+Analytics Dashboard Design
+A dashboard should answer useful questions quickly.
+•
+How many students registered?
+•
+How many companies posted jobs?
+•
+Which skills are most common among students?
+•
+How many applications are applied, shortlisted, selected or rejected?
+•
+Which companies received the most applications?
+•
+What is the weekly progress trend?
+•
+Use simple bar, line, pie or card-based metrics.
+Instructor cue: Ask: What decision can a placement officer make using this chart?
+Project-Based OJT Teaching Deck
+6
+
+Week 4
+Chart.js Dashboard Example
+Chart.js Dashboard Example
+•
+Create a summary API endpoint on backend.
+•
+Fetch summary data on frontend.
+•
+Render a chart from live project data.
+•
+Keep labels and data arrays clean and predictable.
+const ctx = document.getElementById("statusChart");
+new Chart(ctx, {
+  type: "bar",
+  data: {
+    labels: ["Applied", "Shortlisted", "Selected"],
+    datasets: [{
+      label: "Applications",
+      data: [40, 15, 5]
+    }]
+  }
+});
+Project-Based OJT Teaching Deck
+7
+
+Week 4
+Search, Filtering and Recommendation Logic
+Search, Filtering and Recommendation Logic
+Not every intelligent feature needs a paid AI API.
+•
+Search: match user query against title, skills, company or status.
+•
+Filter: show jobs based on location, skill, package or deadline.
+•
+Sort: newest, highest package, most relevant or status priority.
+•
+Recommendation: compare student skills with required job skills.
+•
+Scoring example: matched skills / required skills x 100.
+•
+Explainable recommendation is better than a black-box feature.
+Instructor cue: Begin with rule-based intelligence before introducing external AI services.
+Project-Based OJT Teaching Deck
+8
+
+Week 4
+Simple Job Matching Logic
+Simple Job Matching Logic
+•
+Turn skills into lowercase arrays.
+•
+Count overlap between required and student skills.
+•
+Return match percentage.
+•
+Show reason: matched skills list.
+function matchJob(studentSkills, requiredSkills) {
+  const s = studentSkills.map(x => x.toLowerCase());
+  const r = requiredSkills.map(x => x.toLowerCase());
+  const matched = r.filter(skill => s.includes(skill));
+  const score = Math.round((matched.length / r.length) * 100);
+  return { score, matched };
+}
+
+// Example: { score: 67, matched: ["react", "sql"] }
+Project-Based OJT Teaching Deck
+9
+
+Week 4
+Responsible Use of AI Tools
+Responsible Use of AI Tools
+AI can help, but students must still understand and own their code.
+•
+Use AI for explanation, debugging hints, documentation drafts and test ideas.
+•
+Do not paste secrets, personal data or private credentials into AI tools.
+•
+Verify generated code before using it.
+•
+Cite or disclose AI-assisted sections where required by institution policy.
+•
+Students must be able to explain every line they submit.
+•
+Avoid dependence: use AI as a mentor, not a replacement for learning.
+Instructor cue: Make students explain AI-generated code in viva to confirm understanding.
+Project-Based OJT Teaching Deck
+10
+
+Week 4
+AI Integration Concept: Chatbot or Text Feature
+AI Integration Concept: Chatbot or Text Feature
+Optional extension for advanced teams.
+•
+Frontend captures user question or text input.
+•
+Backend receives request and validates it.
+•
+Backend calls AI service or local logic using a safe prompt.
+•
+Response is returned to frontend and displayed to user.
+•
+Store only required logs; avoid storing sensitive user data.
+•
+Add fallback message when service fails or quota is unavailable.
+Instructor cue: Keep AI integration optional because APIs may require accounts, keys or cost controls.
+Project-Based OJT Teaching Deck
+11
+
+Week 4
+Prompt Engineering for Developers
+Prompt Engineering for Developers
+Context
+Describe project, stack, files and problem clearly.
+Task
+Ask for one specific output: fix, explain, test or refactor.
+Constraints
+Mention framework, version, security and style constraints.
+Examples
+Provide sample input/output for predictable results.
+Review
+Read generated code and test it before committing.
+Document
+Record what was AI-assisted and what was manually 
+changed.
+Project-Based OJT Teaching Deck
+12
+
+Week 4
+Final Testing and Bug Fixing
+Final Testing and Bug Fixing
+Before presentation, the app must work reliably.
+•
+Test login for all roles.
+•
+Test all CRUD operations.
+•
+Test invalid inputs and unauthorized access.
+•
+Test deployed frontend-backend-database flow.
+•
+Check mobile responsiveness and broken links.
+•
+Verify README instructions on a fresh machine if possible.
+•
+Freeze features 1 day before final demo; fix only bugs after that.
+Instructor cue: Teach feature freeze: last-minute features often break final demos.
+Project-Based OJT Teaching Deck
+13
+
+Week 4
+Final Project Report Structure
+Final Project Report Structure
+The report should explain what was built and how.
+•
+Title page, certificate, acknowledgement and abstract.
+•
+Problem statement, objectives and scope.
+•
+Technology stack and system requirements.
+•
+Architecture diagram and database design.
+•
+Module descriptions and API documentation.
+•
+Screenshots, testing and deployment details.
+•
+Security measures and AI/data feature explanation.
+•
+Challenges, learning outcomes, conclusion and future scope.
+Instructor cue: Give a report template and insist on screenshots from actual student project.
+Project-Based OJT Teaching Deck
+14
+
+Week 4
+GitHub Portfolio Readiness
+GitHub Portfolio Readiness
+Recruiters and interviewers often inspect GitHub first.
+•
+Repository name should be clean and descriptive.
+•
+README should include demo link, screenshots and setup steps.
+•
+Use meaningful commit history and avoid one final massive commit.
+•
+Add .gitignore to exclude node_modules, .env and build artifacts.
+•
+Include sample environment variable names in .env.example.
+•
+Add project architecture and feature list.
+•
+Pin the project on GitHub profile if possible.
+Instructor cue: Make the GitHub repo understandable in less than 2 minutes.
+Project-Based OJT Teaching Deck
+15
+
+Week 4
+Resume and Interview Preparation
+Resume and Interview Preparation
+Convert project work into employability evidence.
+•
+Resume bullet: Built and deployed a full-stack Placement Cell Portal using React, Node.js and MongoDB.
+•
+Mention measurable features: role-based login, CRUD APIs, dashboard, deployment.
+•
+Prepare 2-minute project explanation: problem, solution, stack, role, result.
+•
+Practice explaining one bug and how it was solved.
+•
+Prepare database design and API questions.
+•
+Prepare security, deployment and Git workflow questions.
+Instructor cue: Ask each student to speak for 2 minutes without reading slides.
+Project-Based OJT Teaching Deck
+16
+
+Week 4
+Five-Day Implementation Plan
+Five-Day Implementation Plan
+DayFocusStudent TaskEvidence
+1FeatureChoose AI/data enhancement and design it.Feature plan
+2BuildImplement dashboard/search/recommendation/chatbot.Working feature
+3TestFinal testing, bug fixing and UI cleanup.Test report
+4DocumentReport, README, manual and resume bullets.Documentation package
+5PresentFinal demo, viva and submission.Presentation and signed report
+Project-Based OJT Teaching Deck
+17
+
+Week 4
+Final Submission and Evaluation
+Final Submission and Evaluation
+The final package should prove one month of work.
+•
+Final deployed capstone project URL.
+•
+GitHub repository with README and screenshots.
+•
+Project report and user manual.
+•
+API documentation and database schema.
+•
+Testing report and deployment guide.
+•
+Presentation slides and demo script.
+•
+Weekly progress reports and mentor remarks.
+•
+Resume-ready project summary.
+Instructor cue: Evaluate the story: problem, build process, deployment, improvement and learning.
+Project-Based OJT Teaching Deck
+18
+
+Week 4
+Study Materials and Reference Links
+Study Materials and Reference Links
+Use official documentation first. These links are suitable for student practice and instructor preparation.
+Chart.js Getting Started
+Charts and dashboard visualizations in JavaScript.
+OpenAI API Text Generation
+Text generation concepts and API usage patterns.
+Google ML Crash Course
+Machine learning concepts with interactive learning.
+Google AI Studio Docs
+Optional generative AI API documentation.
+Kaggle Learn: Data Visualization
+Short hands-on data visualization course.
+GitHub Profile README Guide
+Customize profile for portfolio presence.
+Google Docs: MLCC
+Overview of Google Machine Learning Crash Course.
+MDN Fetch API
+Frontend API calls and async requests.
+Canva Presentations
+Create student presentation visuals.
+GitHub Docs: Hello World
+Repositories, branches, commits, pull requests.
+Tip: Assign the linked docs as pre-read before the lab and ask students to note 3 learnings and 2 doubts.
+Project-Based OJT Teaching Deck
+19
+
+End of Week 4 Teaching Deck
+Next action: run the lab, collect GitHub links, review commits, and record weekly progress.
+Student evidence to collect
+Code commits, screenshots, working demo, README, report, reflection notes.
+Thank you
+Project-Based OJT Teaching Deck
+20
