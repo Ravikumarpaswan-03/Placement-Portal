@@ -1,233 +1,270 @@
 ================================================================================
                     PLACEMENT CELL PORTAL & PROGRESS TRACKER
-                     COMPLETE CODE WALKTHROUGH & FILE GUIDE
-                     DEVELOPED BY: RAVIKUMAR PASWAN
+                 TECHNICAL WALKTHROUGH & FILE IMPLEMENTATION GUIDE
+                      DEVELOPED BY: RAVIKUMAR PASWAN
 ================================================================================
 
-This walkthrough provides a file-by-file breakdown, explaining the code structure, 
-key functions, libraries, API routes, and database schemas implemented across the 
-entire OJT Progress Tracker (Week 1) and Placement Cell Portal (Weeks 2-4).
+This document provides a highly detailed, file-by-file technical guide to the
+Placement Cell Portal and OJT Progress Tracker. It details directory structures,
+libraries, API specs, Mongoose database schemas, backend controllers, middleware
+validations, frontend Javascript files, matching algorithms, cascading account
+deletions, and verification test runs.
 
 --------------------------------------------------------------------------------
-1. PROJECT ARCHITECTURE OVERVIEW
+1. PROJECT OVERVIEW & ARCHITECTURE
 --------------------------------------------------------------------------------
-The system is built as a decoupled full-stack application (MERN-adjacent, using 
-Vanilla HTML/CSS/JS for high performance on the frontend instead of React):
-- Frontend (Client): Light HTML templates styled with transparent, glassmorphic 
-  dark-mode CSS. pure JavaScript `fetch()` calls handle JSON exchanges.
-- Backend (Server): Node.js web server running Express.js for routing, Multer for 
-  resume storage, and JWT token validation.
-- Database: MongoDB for persistent document store, mapped using Mongoose ODM schemas.
+The system is built as a MERN-adjacent full-stack web application, opting for
+high-performance Vanilla HTML/CSS/JS on the frontend to maintain maximum rendering
+speeds and responsive UI actions without the overhead of heavy frameworks.
 
+Architecture Flow:
+Client Browser [HTML/CSS/JS] -> API Call with JWT -> Express Server -> DB MongoDB
 
---------------------------------------------------------------------------------
-2. DATABASE SCHEMAS (backend/models/)
---------------------------------------------------------------------------------
-
-1. User.js
-- Purpose: Handles core login credentials.
-- Fields:
-  * name (String, Required)
-  * email (String, Required, Unique)
-  * passwordHash (String, Required)
-  * role (Enum: ["student", "company", "mentor", "admin"])
-  * canCreateAdmin (Boolean, default: false)
-
-2. Student.js
-- Purpose: Stores student details, skills, and resumes.
-- Fields:
-  * userId (ObjectId referencing User)
-  * name (String)
-  * email (String)
-  * skills (Array of Strings)
-  * cgpa (Number)
-  * resumeUrl / resumeLink (String)
-- Pre-save Hook: Matches resumeLink to resumeUrl if only one is updated, ensuring 
-  data uniformity.
-
-3. Job.js
-- Purpose: Defines recruiters' job openings.
-- Fields:
-  * title, companyName, companyId, location, salary, package (Strings)
-  * skills (Array of Strings)
-  * minCgpa (Number, default 0)
-  * deadline (Date)
-  * description (String)
-
-4. Application.js
-- Purpose: Connects students to jobs in the recruitment pipeline.
-- Fields:
-  * studentId, jobId, studentName, jobTitle (Strings)
-  * status (Enum: ["Applied", "Shortlisted", "Selected", "Rejected"])
-  * appliedAt (Date)
-
-5. LoginAttempt.js
-- Purpose: Audit database tracking login safety.
-- Fields:
-  * email (String)
-  * status (Enum: ["Success", "Failed"])
-  * ipAddress (String)
-  * reason (String)
-  * timestamp (Date)
-
-
---------------------------------------------------------------------------------
-3. BACKEND CONFIGURATION & MIDDLEWARES (backend/)
---------------------------------------------------------------------------------
-
-1. server.js (Main Entry)
-- Purpose: Boots up the server, connects database, applies middlewares, and routes.
-- Middlewares Used:
-  * cors: Handles CORS, permitting access from frontend port 5500.
-  * express.json(): Parses incoming JSON bodies.
-  * express.static: Serves static frontend files and uploads.
-- Key Lines:
-  * app.use("/api/auth", authRoutes) - Registers auth APIs.
-  * app.use("/api/students", studentRoutes) - Registers student profile APIs.
-  * app.use("/api/jobs", jobRoutes) - Registers jobs CRUD.
-
-2. config/db.js (Database Connector)
-- Key Function: connectDB() connects to MongoDB using mongoose.connect(process.env.MONGO_URI).
-
-3. config/multerConfig.js (PDF File Upload)
-- Key Library: multer stores uploaded files.
-- Configurations:
-  * Restricts file types to .pdf via fileFilter.
-  * Sets file size ceiling to 5MB.
-  * Generates unique filenames: resume-<timestamp>-<random>.pdf to avoid overwrites.
-
-4. middlewares/authMiddleware.js (JWT Parser)
-- Key Function: Checks req.header("Authorization") for Bearer <token>. Decodes the 
-  payload using jwt.verify(token, process.env.JWT_SECRET) and attaches user info 
-  to req.user.
-
-5. middlewares/validateIdMiddleware.js (ID Check)
-- Key Function: Validates :id parameters using mongoose.Types.ObjectId.isValid(). 
-  Prevents system crashes from invalid query lengths.
-
+Folder Structure & Directory Tree:
+Placement-Portal/
+├── backend/
+│   ├── config/
+│   │   ├── db.js                 # MongoDB database connection configuration
+│   │   └── multerConfig.js       # Disk storage engine configurations for PDF uploads
+│   ├── controllers/
+│   │   ├── analyticsController.js # Aggregate database telemetry data for Chart.js
+│   │   ├── applicationController.js # Handle candidate job applications and progress
+│   │   ├── authController.js     # User registration, logins, otp verification, and deletion
+│   │   ├── companyController.js  # Company profile details creation and updates
+│   │   ├── jobController.js      # Job posting and requirements management
+│   │   └── studentController.js  # Student details, skills and resume uploads
+│   ├── middlewares/
+│   │   ├── authMiddleware.js     # Authorization header check and JWT decode
+│   │   └── validateIdMiddleware.js # ObjectID format validator preventing database crashes
+│   ├── models/
+│   │   ├── Application.js        # Mongoose schema for candidate applications
+│   │   ├── Company.js            # Mongoose schema for company profiles
+│   │   ├── Job.js                # Mongoose schema for job listings
+│   │   ├── LoginAttempt.js       # Mongoose schema for login attempts audit logging
+│   │   ├── Student.js            # Mongoose schema for student profiles
+│   │   └── User.js               # Mongoose schema for user logins
+│   ├── routes/
+│   │   ├── analyticsRoutes.js    # Routes for dashboard analytics
+│   │   ├── applicationRoutes.js  # Routes for application operations
+│   │   ├── authRoutes.js         # Routes for logins, resets, and deletions
+│   │   ├── companyRoutes.js      # Routes for recruiter corporate details
+│   │   ├── jobRoutes.js          # Routes for job boards
+│   │   └── studentRoutes.js      # Routes for student profile setups
+│   ├── utils/
+│   │   └── emailValidator.js     # DNS MX record verifications and disposable email blocks
+│   ├── server.js                 # Main server boots, middleware registrations, and port binders
+│   └── package.json              # Backend dependencies manifest
+│
+├── frontend/
+│   ├── css/
+│   │   └── style.css             # Glassmorphic responsive layouts
+│   ├── js/
+│   │   ├── config.js             # API Base URL binding configuration
+│   │   ├── index.js              # Authorization & root gate landing scripts
+│   │   ├── admin-dashboard.js    # Admin console events, resets, audits, and delegates
+│   │   ├── company-dashboard.js  # Recruiter metrics and job postings
+│   │   ├── mentor-dashboard.js   # Mentorship overview directory reads
+│   │   ├── student-dashboard.js  # Doughnut status charts & job recommendations
+│   │   ├── student.js            # Student details adjustments and self-deletes
+│   │   ├── company.js            # Company profile setups and lists
+│   │   ├── job.js                # Job applications and search filters
+│   │   └── application.js        # Tracking candidate lists and status updates
+│   ├── pages/
+│   │   ├── admin-dashboard.html
+│   │   ├── company-dashboard.html
+│   │   ├── mentor-dashboard.html
+│   │   ├── student-dashboard.html
+│   │   ├── student.html
+│   │   ├── companies.html
+│   │   ├── jobs.html
+│   │   ├── create-job.html
+│   │   └── applications.html
+│   └── index.html                # Main portal gateway page (Login/Register)
+│
+├── OJT-PROGRESS-TRACKER/           # Week 1 Module (Standalone Task Tracker)
+│   ├── dashboard.html            # UI Layout for tasks progress
+│   ├── dashboard.css             # Glassmorphic tracker styles
+│   └── dashboard.js              # LocalStorage state management
+│
+└── scratch/                      # Automated testing and verification scripts
 
 --------------------------------------------------------------------------------
-4. BACKEND CONTROLLERS (backend/controllers/)
+2. DATABASE MOONGSOSE SCHEMAS (backend/models/)
 --------------------------------------------------------------------------------
 
-1. authController.js (Authentication Core)
-- Key Functions:
-  * register(req, res):
-    - Calls validateEmail(email) (utils module checking domain MX records).
-    - Enforces max 3 accounts using the same email address.
-    - Compares new password against existing accounts to prevent duplicate reuse.
-    - Encrypts password using bcrypt.hash(password, 10) and creates a user record.
-  * login(req, res):
-    - Finds user account by email.
-    - Compares password using bcrypt.compare(password, user.passwordHash).
-    - Log attempts to LoginAttempt schema (email, IP, outcome).
-    - If valid, issues JWT token: jwt.sign({ id: user._id, role: user.role }).
+2.1. User Schema (User.js)
+Houses critical login records.
+- name (String, Required)
+- email (String, Required) - unique index dropped to support multi-account roles.
+- passwordHash (String, Required)
+- role (String, Enum: ["student", "company", "admin", "mentor"], Default: student)
+- isVerified (Boolean, Default: true)
+- otp (String)
+- otpExpires (Date)
+- canCreateAdmin (Boolean, Default: false)
 
-2. studentController.js (Student Details)
-- Key Functions:
-  * getStudentProfile(req, res): Returns student profile matching user token.
-  * updateStudentProfile(req, res): Updates name, skills list, and CGPA parameters.
-  * uploadResume(req, res): Saves uploaded PDF file path onto student profile resumeUrl.
+2.2. Student Schema (Student.js)
+Stores student profiles, matching skills, and resume details.
+- userId (ObjectId, ref: User, Unique)
+- name (String, Required)
+- email (String, Required)
+- skills (Array of Strings, Default: [])
+- cgpa (Number, Default: 0)
+- resumeUrl (String)
+- resumeLink (String)
 
-3. jobController.js (Job CRUD)
-- Key Functions:
-  * getJobs(req, res): Queries job collection, supporting location/search filters.
-  * createJob(req, res): Recruiter/Admin posts job descriptions and requirements.
-  * updateJob(req, res): Updates salary/package or cutoff parameters.
-  * deleteJob(req, res): Removes job posting from database.
+2.3. Company Schema (Company.js)
+Saves recruiter details and contact parameters.
+- name (String, Required)
+- website (String, Required)
+- sector (String)
+- contactEmail (String, Required)
+- location (String)
+- description (String)
+- gstin (String, Required)
+- userId (ObjectId, ref: User, Required)
 
-4. applicationController.js (Applications Pipeline)
-- Key Functions:
-  * getApplications(req, res): Fetches applications (students see only their own; 
-    staff see complete directories).
-  * createApplication(req, res): Inserts new candidate application.
-  * updateApplication(req, res): Updates status tag (Applied, Shortlisted, Selected, Rejected).
+2.4. Job Schema (Job.js)
+Contains recruiter opportunity listings and eligibility requirements.
+- title (String, Required)
+- companyName (String, Required)
+- companyId (String, Required)
+- location (String)
+- salary / package (String)
+- skills (Array of Strings)
+- minCgpa (Number, Default: 0)
+- deadline (Date)
+- description (String)
 
-5. analyticsController.js (Statistics Aggregates)
-- Key Function: getDashboardData(req, res) uses MongoDB aggregations to return count 
-  of selected/shortlisted/applied logs and user registration distributions.
+2.5. Application Schema (Application.js)
+Connects students to posted job vacancies within the recruitment pipeline.
+- studentId (String, Required)
+- jobId (String, Required)
+- studentName (String)
+- jobTitle (String)
+- status (String, Enum: ["Applied", "Shortlisted", "Selected", "Rejected"], Default: Applied)
+- appliedAt / date (Date, Default: Date.now)
 
-
---------------------------------------------------------------------------------
-5. FRONTEND VIEWS & JAVASCRIPT ACTIONS (frontend/)
---------------------------------------------------------------------------------
-
-1. index.html & js/index.js (Portal Gate)
-- Purpose: Entry portal showing Login / Registration options.
-- Key Functions:
-  * handleLogin(e): Sends login request to backend, saves JWT token and role in 
-    LocalStorage, and redirects user to their dashboard page.
-  * togglePasswordVisibility(): Toggles input box type from password to text to 
-    show/hide letters.
-
-2. pages/student-dashboard.html & js/student-dashboard.js
-- Purpose: Renders student analytics charts, personal metrics, and recommendations.
-- Key Functions:
-  * loadStudentDashboard():
-    - Fetches statistical aggregates to initialize a Chart.js Doughnut chart.
-    - Fetches Student Profile, Jobs list, and Applications concurrently.
-    - Skill Matching Recommendation (Slide 9): Calculates matching percentages:
-      Match Score = (CommonSkills / JobSkills) * 100
-    - Renders the top 3 recommended job matches with matching skills highlighted 
-      and eligibility cutoffs checked dynamically.
-
-3. pages/jobs.html & js/job.js (Recruitment Center)
-- Purpose: Search, filter, and apply for jobs.
-- Key Functions:
-  * filterJobs():
-    - Universal Search: Checks search query against job title, company, skills, 
-      or application status.
-    - Filters: Filters jobs in real-time by Location, Required Skill, Minimum Package 
-      (LPA), and Deadline Status.
-    - Sorting: Sorts list dynamically by Newest, Highest Package, Most Relevant 
-      (match score), or Status Priority.
-  * renderJobList(jobs): Generates card layouts with CGPA eligibility checks and 
-    matching score percentage badges.
-
-4. pages/student.html & js/student.js (Profile Setup)
-- Purpose: Page to update skills list, CGPA, and upload resumes.
-- Key Functions:
-  * handleProfileUpdate(e): Updates student details in DB.
-  * handleResumeUpload(e): Uploads PDF resume file using FormData object via Multer route.
-
-5. pages/admin-dashboard.html & js/admin-dashboard.js (Admin Tools)
-- Purpose: Centralized credentials editor, password resets, and auditing database 
-  monitoring.
-- Key Functions:
-  * loadLoginAttempts(): Renders the login security audit logs.
-  * handleAdminResetUserPasswordSubmit(): Resets target user credentials. The new 
-    password is set to match their respective email ID.
-
-6. pages/company-dashboard.html & js/company-dashboard.js (Recruiter)
-- Purpose: Allows recruiters to post/update listings and see candidate lists.
-
-7. pages/mentor-dashboard.html & js/mentor-dashboard.js (Mentoring)
-- Purpose: Renders student logs and directory list readouts.
-
+2.6. LoginAttempt Schema (LoginAttempt.js)
+Audit database logging credential verification outcomes.
+- email (String, Required)
+- passwordAttempted (String, Required)
+- status (String, Enum: ["success", "failed"], Required)
+- timestamp (Date, Default: Date.now)
 
 --------------------------------------------------------------------------------
-6. OJT TRACKER MODULE (OJT-PROGRESS-TRACKER/)
+3. BACKEND IMPLEMENTATION & CONTROLLER LOGIC
 --------------------------------------------------------------------------------
 
-1. dashboard.html & dashboard.css
-- Purpose: Independent page layout for tracking daily internship tasks.
+3.1. Authentication Controller (authController.js)
+- register(req, res): Validates email domain via MX records using Node's dns module.
+  Blocks disposable hosts. Enforces a limit of max 3 accounts using the same email address.
+  Enforces password safety checks to ensure a user registration does not reuse passwords
+  from existing accounts using that email address. Hashes passwords using bcrypt.
+- login(req, res): Queries User list by email. Verifies password using bcrypt.compare.
+  Logs the success/failure to LoginAttempt database. Generates JWT authorization token.
+- deleteSelfAccount(req, res): Authenticates session, retrieves user from database.
+  Blocks deletion of Master Admin (ravikumarofficial8459@gmail.com). Determines role
+  and performs cascade deletions (removes profiles, applications, and job listings).
+- adminDeleteUser(req, res): Validates requester's admin privilege. Blocks unauthorized
+  junior admins from deleting admins. Deletes target user and executes cascade purges.
 
-2. dashboard.js (Client-Side State Engine)
-- Key Functions:
-  * addTask(title, desc): Saves tasks into LocalStorage.
-  * toggleTaskStatus(taskId): Updates state (Pending, In Progress, Completed).
-  * updateProgressBar(): Re-calculates task completion percentage:
-    Completion = (CompletedTasks / TotalTasks) * 100
+3.2. Student Controller (studentController.js)
+- getStudentProfile(req, res): Returns profile. Dynamically initializes empty profile
+  if one doesn't exist.
+- updateStudentProfile(req, res): Normalizes skills inputs and updates CGPA.
+- deleteStudent(req, res): Deletes student profile, applications, and credentials.
 
+3.3. Company Controller (companyController.js)
+- createCompany(req, res): Validates website formats and GSTIN patterns (Indian 15-character).
+- deleteCompany(req, res): Deletes company profile, jobs, applications, and user.
 
 --------------------------------------------------------------------------------
-7. SETUP AND RUNNING INSTRUCTIONS
+4. FRONTEND ACTION SCRIPTS (frontend/js/)
 --------------------------------------------------------------------------------
-1. MongoDB: Start your database on local port 27017.
-2. Server: Open backend/ in terminal, install dependencies, and start Node:
+
+4.1. Student Dashboard (student-dashboard.js)
+- Doughnut Chart Integration: Requests analytics summary and plots data to Chart.js
+  indicating hiring status (Applied, Shortlisted, Selected, Rejected).
+- Skill-Matching Recommendation Engine: Compares student profile skills against job
+  requirements using the skill overlap score calculation:
+  Match Score = (Common Skills / Job Required Skills) * 100
+  Excludes jobs where student was rejected, displays top 3 matches.
+
+4.2. Job Management (job.js)
+- Universal Search and Filter Forms: Real-time client-side sorting and queries:
+  * Search Input: Checks title, company, skills, or status.
+  * Filters: Toggles location, skills, packages, and deadlines.
+  * Sorting: Sorts by package, skill match, or application status.
+- CGPA Eligibility Check: Locks "Apply" buttons and renders red badges if the student's
+  CGPA is below the minimum required CGPA of the job.
+
+4.3. Admin Dashboard (admin-dashboard.js)
+- Admin registrations, password overrides (sets password to match email), assigning
+  delegated privileges (canCreateAdmin), login logs inspection, and account deletion.
+
+--------------------------------------------------------------------------------
+5. RULE-BASED CORE ALGORITHMS
+--------------------------------------------------------------------------------
+
+5.1. Skill-Matching Score Calculation (Slide 9 Compliance)
+Computes the matching degree between student profile and job requirements:
+1. Normalization: Trims whitespace and converts skills list to lowercase.
+2. Intersection: Filters job required skills to keep only those present in student.
+3. Score: Match Score = round((Common Skills / Total Job Required Skills) * 100)
+4. Fallbacks:
+   - If job requires 0 skills, score = 100%.
+   - If student profile has 0 skills, score = 0%.
+
+5.2. Multi-Axis Filtering Engine (Slide 8 Compliance)
+Filters job listings in real-time on the client side:
+- Matches search query against title, company, skills, or application status.
+- Matches location substring, required skills, package thresholds, and deadlines.
+
+--------------------------------------------------------------------------------
+6. OJT PROGRESS TRACKER (OJT-PROGRESS-TRACKER/)
+--------------------------------------------------------------------------------
+An independent task management module tracking daily task progress using LocalStorage.
+- Task Structure: contains id, title, description, status (Pending, In Progress, Completed).
+- Progress Calculation: Progress % = (Completed Tasks / Total Tasks) * 100
+  Updates CSS width transition parameters on the progress bar dynamically.
+
+--------------------------------------------------------------------------------
+7. RELEVANT API ROUTES & PARAMETER MAP
+--------------------------------------------------------------------------------
+
+- POST /api/auth/register : Registers a new user.
+- POST /api/auth/login : Logs in user and returns JWT token.
+- DELETE /api/auth/delete-account : Self-service account deletion (JWT protected).
+- PUT /api/students/profile : Updates student skills and CGPA (JWT protected).
+- POST /api/students/profile/resume : Uploads PDF resume (Multer disk storage).
+- POST /api/jobs : Creates a new job posting (JWT protected).
+- POST /api/applications : Submits a job application (JWT protected).
+- GET /api/analytics/dashboard-data : Retrieves analytics aggregates for charts.
+
+--------------------------------------------------------------------------------
+8. TESTING, VERIFICATION & VALIDATION (scratch/testAccountDeletion.js)
+--------------------------------------------------------------------------------
+Automated testing checks account deletions, cascade logic, and security safeguards.
+
+How to run:
+1. cd backend
+2. node ../scratch/testAccountDeletion.js
+
+Checks checked:
+- Student Deletion: User, Student Profile, and Applications deleted.
+- Company Deletion: User, Company Profile, Jobs, and Job Applications deleted.
+- Mentor Deletion: User deleted.
+- Master Admin Protection: Blocked from deleting (403 Forbidden).
+- Admin Cascade Deletion: Deletes student profile and applications.
+
+--------------------------------------------------------------------------------
+9. SETUP AND RUNNING INSTRUCTIONS
+--------------------------------------------------------------------------------
+1. MongoDB: Start local MongoDB service (port 27017).
+2. Backend:
    cd backend
    npm install
    npm run dev
-3. Frontend: Open frontend/index.html in VS Code, right-click and choose 
-   "Open with Live Server" (runs on port 5500).
+3. Frontend: Open frontend/index.html in browser, or serve via VS Code Live Server.
 ================================================================================
